@@ -8,7 +8,7 @@ export default new Sequelize(
     process.env.DB_PASSWORD,
     {
         dialect: 'postgres',
-        host: process.env.DB_HOST,
+        host: process.env.DATABASE_URL,
         port: parseInt(process.env.DB_PORT),
     }
 );
