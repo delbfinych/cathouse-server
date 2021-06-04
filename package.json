@@ -1,8 +1,8 @@
 {
-  "name": "server",
+  "name": "cathouse-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "server": "ts-node-dev --respawn --transpile-only index.ts",
     "build": "tsc --project tsconfig.json",
