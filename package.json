@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "server": "ts-node-dev --respawn --transpile-only index.ts",
-    "build": "ts-node index.ts",
+    "build": "tsc --project tsconfig.json",
     "deploy": "git add . && git commit -m Heroku && git push heroku master"
   },
   "author": "",
