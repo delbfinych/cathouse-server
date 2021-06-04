@@ -1,11 +1,15 @@
 import { Followers } from '../models/follower.model';
 import { CustomError } from '../error/CustomError';
 import { User, Post, Comment, Role, UserRole } from '../models/models';
-import Express from 'express';
 import sequelize from '../db';
 import { config } from 'dotenv';
-import { IPost } from './post.controller';
-import { IPaginationInfo, IPaginationResponse, IUser } from './interfaces';
+import {
+    IPaginationInfo,
+    IPaginationResponse,
+    IUser,
+    IPost,
+    AuthRequest,
+} from './interfaces';
 config();
 type ISimpleUser = Pick<
     IUser,
@@ -32,6 +36,7 @@ class UsersController {
                 `)
             )[0];
             users = users.map((user) => {
+                //@ts-ignore
                 delete user.password;
                 return user;
             });
@@ -71,6 +76,7 @@ class UsersController {
             if (!user) {
                 return next(CustomError.notFound('User was not found'));
             }
+            //@ts-ignore
             delete user.password;
             res.json(user);
             next();
@@ -127,10 +133,10 @@ class UsersController {
             next(CustomError.internal(error.message));
         }
     }
-    async update(req: Express.Request, res, next) {
+    async update(req: AuthRequest, res, next) {
         try {
             const { id } = req.params;
-            if (id != req.user.id) {
+            if (parseInt(id) != req.user.id) {
                 return next(CustomError.forbidden('Incorrect id'));
             }
             const newUserData = { ...req.user };
@@ -181,9 +187,7 @@ class UsersController {
 
                 WHERE "Followers".following_id = ${uid}
                 ORDER BY "Users".id
-                LIMIT ${limit} OFFSET ${
-                        limit * (page - 1)
-                    } `
+                LIMIT ${limit} OFFSET ${limit * (page - 1)} `
                 )
             )[0] as ISimpleUser[];
             const details = (
@@ -231,9 +235,7 @@ class UsersController {
 
             where "Followers".follower_id = ${uid} 
             ORDER BY "Users".id
-            LIMIT ${limit} OFFSET ${
-                        limit * (page - 1)
-                    }`
+            LIMIT ${limit} OFFSET ${limit * (page - 1)}`
                 )
             )[0] as ISimpleUser[];
             const details = (

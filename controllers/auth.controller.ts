@@ -94,6 +94,7 @@ class AuthController {
                 role: role.role_name,
                 avatar_url: user.avatar_url,
             });
+            
             return res.json({ token });
         } catch (error) {
             next(CustomError.internal(error.message));

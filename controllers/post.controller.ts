@@ -4,8 +4,8 @@ import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { Post, Likes, Comment, PostAttachment } from '../models/models';
 import { config } from 'dotenv';
-import { IPaginationInfo, IPaginationResponse } from './user.controller';
-import { IPost } from './interfaces';
+import { IPaginationInfo, IPaginationResponse, IPost } from './interfaces';
+
 config();
 
 enum Like {
@@ -15,7 +15,7 @@ enum Like {
 
 
 const getPost = async (post_id, user_id): Promise<IPost | null> => {
-    const post: IPost = (
+    const post = (
         await sequelize.query(`
             SELECT "Posts".*, 
                     CAST(COALESCE(b.likes, 0) AS INTEGER) likes_count, 
@@ -39,14 +39,14 @@ const getPost = async (post_id, user_id): Promise<IPost | null> => {
             ON comments.post_id = "Posts".post_id
 
             WHERE "Posts".post_id = ${post_id}`)
-    )[0][0];
+    )[0][0] as IPost;
     if (!post) {
         return null;
     }
-    post.attachments = await PostAttachment.findAll({
-        where: { post_id },
-        attributes: ['path', 'createdAt'],
-    });
+    // post.attachments = await PostAttachment.findAll({
+    //     where: { post_id },
+    //     attributes: ['path', 'createdAt'],
+    // });
 
     return post;
 };
@@ -249,6 +249,7 @@ class PostController {
                 post_id: id,
             });
             res.json({
+                //@ts-ignore
                 ...comment.dataValues,
                 likes_count: 0,
                 dislikes_count: 0,

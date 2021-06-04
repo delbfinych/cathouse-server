@@ -12,21 +12,21 @@ enum Like {
 
 
 const getComment = async (comment_id): Promise<IComment | null> => {
-    const comment: IComment = (
+    const comment = (
         await sequelize.query(
             `select "Comments".*, CAST(coalesce(b.likes, 0) as INTEGER) as likes_count, CAST(coalesce((b.total - b.likes), 0) as INTEGER) as dislikes_count from "Comments"
             left join (select comment_id, count(*) as total, SUM(liked) as likes from "CommentLikes" group by comment_id) 
             as b on "Comments".comment_id = b.comment_id
             where "Comments".comment_id = ${comment_id}`
         )
-    )[0][0];
+    )[0][0] as IComment;
     if (!comment) {
         return null;
     }
-    comment.attachments = await CommentAttachment.findAll({
-        where: { comment_id },
-        attributes: ['path', 'createdAt'],
-    });
+    // comment.attachments = await CommentAttachment.findAll({
+    //     where: { comment_id },
+    //     attributes: ['path', 'createdAt'],
+    // });
     return comment;
 };
 class CommentController {

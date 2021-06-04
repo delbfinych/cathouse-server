@@ -1,3 +1,5 @@
+import { Roles } from './../roles';
+import Express from 'express';
 export interface IPaginationInfo {
     total_pages: number;
     total_count: number;
@@ -7,7 +9,6 @@ export interface IPaginationResponse<T> extends IPaginationInfo {
     page: number;
     result: T[];
 }
-
 
 export interface IUser {
     id: number;
@@ -44,3 +45,13 @@ export interface IComment {
     dislikes_count: number;
     attachments: [{ path: string; createdAt: string }];
 }
+
+export type IUserToken = {
+    id: number;
+    username: string;
+    first_name: string;
+    last_name: string;
+    role: Roles;
+    avatar_url: string;
+};
+export type AuthRequest = Express.Request & { user: IUserToken };
