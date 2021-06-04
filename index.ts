@@ -10,7 +10,6 @@ import swaggerUi from 'swagger-ui-express/';
 import swaggerDocument from './swagger.json';
 
 const PORT = process.env.PORT;
-console.log(process.env.DATABASE_URL);
 const app = express();
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
