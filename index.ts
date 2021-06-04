@@ -9,7 +9,7 @@ config();
 import swaggerUi from 'swagger-ui-express/';
 import swaggerDocument from './swagger.json';
 
-const PORT = 8000;
+const PORT = process.env.PORT;
 
 const app = express();
 
