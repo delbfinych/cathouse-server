@@ -24,7 +24,7 @@ app.use(handleError);
 (async () => {
     try {
         sequelize.authenticate();
-        sequelize.sync({ force: true });
+        sequelize.sync();
         app.listen(PORT, () => {});
     } catch (error) {
         console.log('ERROR: ', error);
