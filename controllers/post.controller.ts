@@ -1,10 +1,14 @@
-import { IComment } from './../../client/src/api/comment';
 import { Roles } from './../roles';
 import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { Post, Likes, Comment, PostAttachment } from '../models/models';
 import { config } from 'dotenv';
-import { IPaginationInfo, IPaginationResponse, IPost } from './interfaces';
+import {
+    IPaginationInfo,
+    IPaginationResponse,
+    IPost,
+    IComment,
+} from './interfaces';
 
 config();
 
@@ -12,7 +16,6 @@ enum Like {
     LIKE = 1,
     DISLIKE = 0,
 }
-
 
 const getPost = async (post_id, user_id): Promise<IPost | null> => {
     const post = (
