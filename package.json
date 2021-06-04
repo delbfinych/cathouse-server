@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "server": "ts-node-dev --respawn --transpile-only index.ts",
+    "start": "ts-node-dev --respawn --transpile-only index.ts",
     "build": "tsc --project tsconfig.json",
     "deploy": "git add . && git commit -m Heroku && git push heroku main"
   },
