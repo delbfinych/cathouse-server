@@ -6,9 +6,9 @@ import { Users } from './user.model';
 import { UserRoles } from './userRole.model';
 import { Likes } from './likes.model';
 import { CommentLikes } from './commentLikes.model';
-import { CommentAttachment } from './commentAttachment.model';
-import { PostAttachment } from './postAttachment.model';
-import { Media } from './media.model';
+// import { CommentAttachment } from './commentAttachment.model';
+// import { PostAttachment } from './postAttachment.model';
+// import { Media } from './media.model';
 import { File } from './file.model';
 
 Users.hasMany(File);
@@ -48,11 +48,11 @@ CommentLikes.belongsTo(Posts, {
     foreignKey: 'post_id',
 });
 
-Comments.hasMany(CommentAttachment);
-CommentAttachment.belongsTo(Comments, { foreignKey: 'comment_id' });
+// Comments.hasMany(CommentAttachment);
+// CommentAttachment.belongsTo(Comments, { foreignKey: 'comment_id' });
 
-Posts.hasMany(PostAttachment);
-PostAttachment.belongsTo(Posts, { foreignKey: 'post_id' });
+// Posts.hasMany(PostAttachment);
+// PostAttachment.belongsTo(Posts, { foreignKey: 'post_id' });
 
 export {
     Comments as Comment,
@@ -63,8 +63,5 @@ export {
     Likes,
     Users as User,
     CommentLikes,
-    CommentAttachment,
-    PostAttachment,
-    Media,
     File,
 };

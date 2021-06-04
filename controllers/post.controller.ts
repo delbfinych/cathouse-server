@@ -1,7 +1,7 @@
 import { Roles } from './../roles';
 import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
-import { Post, Likes, Comment, PostAttachment } from '../models/models';
+import { Post, Likes, Comment } from '../models/models';
 import { config } from 'dotenv';
 import {
     IPaginationInfo,
@@ -262,47 +262,47 @@ class PostController {
         }
     }
     async attachFiles(req, res, next) {
-        try {
-            const { id } = req.params;
-            const userId = req.user.id;
-            const post = await Post.findOne({
-                where: { post_id: id, author_id: userId },
-            });
-            if (!post) {
-                return next(CustomError.forbidden('Could not attach file'));
-            }
-            for (let file of req.files) {
-                await PostAttachment.create({
-                    path: file.filename,
-                    user_id: userId,
-                    post_id: id,
-                });
-            }
-            res.json({ paths: req.files.map((path) => path.filename) });
-        } catch (error) {
-            next(CustomError.internal(error.message));
-        }
+        // try {
+        //     const { id } = req.params;
+        //     const userId = req.user.id;
+        //     const post = await Post.findOne({
+        //         where: { post_id: id, author_id: userId },
+        //     });
+        //     if (!post) {
+        //         return next(CustomError.forbidden('Could not attach file'));
+        //     }
+        //     for (let file of req.files) {
+        //         await PostAttachment.create({
+        //             path: file.filename,
+        //             user_id: userId,
+        //             post_id: id,
+        //         });
+        //     }
+        //     res.json({ paths: req.files.map((path) => path.filename) });
+        // } catch (error) {
+        //     next(CustomError.internal(error.message));
+        // }
     }
     async detachFiles(req, res, next) {
-        try {
-            const { id } = req.params;
-            const userId = req.user.id;
-            const filenames = req.body.filenames;
-            const post = await Post.findOne({
-                where: { post_id: id, author_id: userId },
-            });
-            if (!post) {
-                return next(CustomError.forbidden('Could not detach file'));
-            }
-            for (let file of filenames) {
-                await PostAttachment.destroy({
-                    where: { post_id: id, path: file },
-                });
-            }
-            res.json({ status: 'ok' });
-        } catch (error) {
-            next(CustomError.internal(error.message));
-        }
+        // try {
+        //     const { id } = req.params;
+        //     const userId = req.user.id;
+        //     const filenames = req.body.filenames;
+        //     const post = await Post.findOne({
+        //         where: { post_id: id, author_id: userId },
+        //     });
+        //     if (!post) {
+        //         return next(CustomError.forbidden('Could not detach file'));
+        //     }
+        //     for (let file of filenames) {
+        //         await PostAttachment.destroy({
+        //             where: { post_id: id, path: file },
+        //         });
+        //     }
+        //     res.json({ status: 'ok' });
+        // } catch (error) {
+        //     next(CustomError.internal(error.message));
+        // }
     }
 }
 
