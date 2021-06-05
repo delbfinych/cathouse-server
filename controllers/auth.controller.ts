@@ -23,7 +23,9 @@ class AuthController {
             return next(CustomError.unauthorized('Incorrect user data'));
         }
         try {
-            const candidate = await User.findOne({ where: { username } });
+            const candidate = await User.findOne({
+                where: { username: '@' + username },
+            });
 
             if (candidate) {
                 return next(
@@ -44,7 +46,7 @@ class AuthController {
                 avatar_url: filename,
             });
             const role = await Role.findOne({
-                where: { role_name: Roles.USER },
+                where: { role_id: Roles.USER },
             });
             await UserRole.create({
                 user_id: user.id,
