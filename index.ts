@@ -9,6 +9,8 @@ import path from 'path';
 config();
 import swaggerUi from 'swagger-ui-express/';
 import swaggerDocument from './swagger.json';
+import authController from './controllers/auth.controller';
+import { Roles } from './roles';
 
 const PORT = process.env.PORT;
 const app = express();
@@ -19,10 +21,16 @@ app.use(cors());
 app.use(express.json());
 app.use('/media', express.static(path.resolve(__dirname, 'static')));
 
-app.use('/media/', upload.single('avatar_url'), (req, res) => {
-    const filename = req.file?.filename;
-    return res.json({ url: filename });
-});
+app.use(
+    '/media/',
+    authController.checkAuth('required'),
+    authController.checkRole([Roles.ADMIN]),
+    upload.single('avatar_url'),
+    (req, res) => {
+        const filename = req.file?.filename;
+        return res.json({ url: filename });
+    }
+);
 
 app.use('/api', router);
 app.use(handleError);
