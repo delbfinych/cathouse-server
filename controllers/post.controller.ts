@@ -17,6 +17,8 @@ enum Like {
     DISLIKE = 0,
 }
 
+const LIMIT = 10;
+
 const getPost = async (post_id, user_id): Promise<IPost | null> => {
     const post = (
         await sequelize.query(`
@@ -200,7 +202,7 @@ class PostController {
         try {
             const { id } = req.params;
             const { page } = req.query;
-            const limit = 10;
+            
             const comments = (
                 await sequelize.query(`
             SELECT "Comments".*, CAST(COALESCE(b.likes, 0) AS INTEGER) AS likes_count, 
@@ -213,14 +215,14 @@ class PostController {
                        ) 
             AS b ON "Comments".comment_id = b.comment_id
             WHERE "Comments".post_id = ${id}
-            ORDER BY "Comments".comment_id LIMIT ${limit} OFFSET ${
-                    limit * (page - 1)
+            ORDER BY "Comments".comment_id LIMIT ${LIMIT} OFFSET ${
+                LIMIT * (page - 1)
                 }`)
             )[0] as IComment[];
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
-                   CEILING (CAST(COUNT(*) AS FLOAT) / ${limit}) total_pages 
+                   CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
             FROM "Comments" WHERE post_id = ${id} 
             `)
             )[0][0] as IPaginationInfo;

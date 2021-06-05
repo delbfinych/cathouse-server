@@ -15,15 +15,17 @@ type ISimpleUser = Pick<
     IUser,
     'id' | 'avatar_url' | 'username' | 'first_name' | 'last_name'
 >;
-
+const LIMIT = 10;
 class UsersController {
     async index(req, res, next) {
         try {
+            const { page = 1 } = req.query;
             let users = (
                 await sequelize.query(` 
                 SELECT  "Users".*, 
                         CAST(COALESCE(qq.followers_count, 0) AS INTEGER) AS followers_count,
-                        CAST(COALESCE(b.following_count, 0) AS INTEGER) AS following_count
+                        CAST(COALESCE(b.following_count, 0) AS INTEGER) AS following_count,
+                        roles.max as role
                 FROM "Users"
                 LEFT JOIN   (SELECT follower_id, 
                                     count(*) AS following_count 
@@ -33,14 +35,37 @@ class UsersController {
                                     count(*) AS followers_count 
                             FROM "Followers" GROUP BY following_id) 
                 AS qq ON "Users".id = qq.following_id
+
+                JOIN (SELECT MAX(role_id) max, "UserRoles".user_id 
+                FROM "UserRoles" GROUP BY "UserRoles".user_id) 
+                as roles on roles.user_id = "Users".id
+
+                LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)} 
                 `)
-            )[0];
+            )[0] as IUser[];
+
             users = users.map((user) => {
                 //@ts-ignore
                 delete user.password;
                 return user;
             });
-            res.json(users);
+
+            const details = (
+                await sequelize.query(`
+            SELECT CAST(COUNT(*) AS INTEGER) total_count, 
+                   CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
+            FROM "Users" 
+            `)
+            )[0][0] as IPaginationInfo;
+
+            const response: IPaginationResponse<IUser> = {
+                page: parseInt(page),
+                result: users,
+                total_count: details.total_count,
+                total_pages: details.total_pages,
+            };
+
+            res.json(response);
             next();
         } catch (error) {
             next(CustomError.internal(error.message));
@@ -52,16 +77,17 @@ class UsersController {
             const user = (
                 await sequelize.query(`
                 SELECT  "Users".*, 
-                        CAST(COALESCE(qq.followers_count, 0) AS INTEGER) AS followers_count,
-                        CAST(COALESCE(b.following_count, 0) AS INTEGER) AS following_count,
-                        t.following_id followed_by_me
+                        CAST(COALESCE(qq.followers_count, 0) AS INTEGER) followers_count,
+                        CAST(COALESCE(b.following_count, 0) AS INTEGER) following_count,
+                        t.following_id followed_by_me,
+                        roles.max as role
                 FROM "Users"
                 LEFT JOIN   (SELECT follower_id, 
                                     count(*) AS following_count 
                             FROM "Followers" GROUP BY follower_id) 
                 AS b ON "Users".id = b.follower_id
                 LEFT JOIN   (SELECT following_id, 
-                                    count(*) AS followers_count 
+                                    count(*) followers_count 
                             FROM "Followers" GROUP BY following_id) 
                 AS qq ON "Users".id = qq.following_id
 
@@ -71,6 +97,10 @@ class UsersController {
                 } GROUP BY following_id ) 
                 AS t ON t.following_id = "Users".id
                 
+                JOIN (SELECT MAX(role_id) max, "UserRoles".user_id 
+                FROM "UserRoles" GROUP BY "UserRoles".user_id) 
+                as roles on roles.user_id = "Users".id
+
                 WHERE "Users".id = ${id}`)
             )[0][0];
             if (!user) {
@@ -167,7 +197,7 @@ class UsersController {
         try {
             const uid = req.params.id;
             const { page = 1 } = req.query;
-            const limit = 20;
+
             const users = (
                 await sequelize.query(
                     `SELECT "Users".id, 
@@ -187,13 +217,13 @@ class UsersController {
 
                 WHERE "Followers".following_id = ${uid}
                 ORDER BY "Users".id
-                LIMIT ${limit} OFFSET ${limit * (page - 1)} `
+                LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)} `
                 )
             )[0] as ISimpleUser[];
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
-                   CEILING (CAST(COUNT(*) AS FLOAT) / ${limit}) total_pages 
+                   CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
             FROM "Followers" WHERE following_id = ${uid} 
             `)
             )[0][0] as IPaginationInfo;
@@ -215,7 +245,7 @@ class UsersController {
         try {
             const uid = req.params.id;
             const { page = 1 } = req.query;
-            const limit = 20;
+
             const users = (
                 await sequelize.query(
                     `SELECT "Users".id, 
@@ -235,13 +265,13 @@ class UsersController {
 
             where "Followers".follower_id = ${uid} 
             ORDER BY "Users".id
-            LIMIT ${limit} OFFSET ${limit * (page - 1)}`
+            LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)}`
                 )
             )[0] as ISimpleUser[];
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
-                   CEILING (CAST(COUNT(*) AS FLOAT) / ${limit}) total_pages 
+                   CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
             FROM "Followers" WHERE follower_id = ${uid} 
             `)
             )[0][0] as IPaginationInfo;
@@ -261,7 +291,7 @@ class UsersController {
         try {
             const { id } = req.params;
             const { page = 1 } = req.query;
-            const limit = 20;
+
             const posts = (
                 await sequelize.query(`
                 SELECT "Posts".*, 
@@ -287,14 +317,14 @@ class UsersController {
                 ON comments.post_id = "Posts".post_id
                 
                 WHERE "Posts".author_id = ${id}
-                ORDER BY "Posts".post_id DESC LIMIT ${limit} OFFSET ${
-                    limit * (page - 1)
+                ORDER BY "Posts".post_id DESC LIMIT ${LIMIT} OFFSET ${
+                    LIMIT * (page - 1)
                 }`)
             )[0];
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
-                   CEILING (CAST(COUNT(*) AS FLOAT) / ${limit}) total_pages 
+                   CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
             FROM "Posts" WHERE "Posts".author_id = ${id} 
             `)
             )[0][0] as IPaginationInfo;
@@ -312,7 +342,6 @@ class UsersController {
         try {
             const { id } = req.params;
             const { page = 1 } = req.query;
-            const limit = 20;
 
             const posts = (
                 await sequelize.query(`
@@ -343,14 +372,14 @@ class UsersController {
                                         WHERE follower_id = ${id}
                                         UNION ALL 
                                         SELECT ${id})
-            ORDER BY "Posts".post_id DESC LIMIT ${limit} OFFSET ${
-                    limit * (page - 1)
+            ORDER BY "Posts".post_id DESC LIMIT ${LIMIT} OFFSET ${
+                    LIMIT * (page - 1)
                 }
             `)
             )[0] as IPost[];
             const details = (
                 await sequelize.query(`
-            SELECT CAST(COUNT(*) AS INTEGER) total_count , CEILING (CAST(COUNT(*) AS FLOAT) / ${limit}) total_pages FROM "Posts" WHERE "Posts".author_id in (SELECT following_id as id 
+            SELECT CAST(COUNT(*) AS INTEGER) total_count , CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages FROM "Posts" WHERE "Posts".author_id in (SELECT following_id as id 
                 FROM "Followers"
                 WHERE follower_id = ${id}
                 UNION ALL 
@@ -394,8 +423,9 @@ class UsersController {
             const { id } = req.params;
 
             const role = await Role.findOne({
-                where: { role_name: req.body.role },
+                where: { role_id: req.body.role },
             });
+
             if (!role) {
                 return next(
                     CustomError.notFound(
@@ -403,11 +433,12 @@ class UsersController {
                     )
                 );
             }
+            await sequelize.query(`
+                   UPDATE "UserRoles" 
+                   SET role_id = ${role.role_id} 
+                   WHERE user_id = ${id}
+            `);
 
-            await UserRole.create({
-                user_id: id,
-                role_id: role.role_id,
-            });
             res.json({ status: 'ok' });
         } catch (error) {
             CustomError.internal(error.message);
@@ -416,20 +447,20 @@ class UsersController {
     async search(req, res, next) {
         try {
             const { query, page } = req.query;
-            const limit = 20;
+
             const result = (
                 await sequelize.query(`
                 SELECT id, avatar_url, username, first_name, last_name 
                 FROM "Users" 
                 WHERE LOWER(CONCAT(first_name, last_name)) LIKE LOWER('%${query}%') 
-                LIMIT ${limit} OFFSET ${limit * (page - 1)}
+                LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)}
             `)
             )[0] as ISimpleUser[];
 
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
-                   CEILING (CAST(COUNT(*) AS FLOAT) / ${limit}) total_pages 
+                   CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
             FROM "Users" 
             WHERE LOWER(CONCAT(first_name, last_name)) LIKE LOWER('%${query}%')  
             `)

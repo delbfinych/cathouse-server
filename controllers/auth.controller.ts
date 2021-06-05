@@ -4,6 +4,7 @@ import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { User, UserRole, Role } from '../models/models';
 import { Roles } from '../roles';
+import userController from './user.controller';
 
 const generateJwt = (obj) => {
     return jwt.sign({ ...obj }, process.env.SECRET_KEY);
@@ -12,7 +13,6 @@ const generateJwt = (obj) => {
 class AuthController {
     async signUp(req, res, next) {
         const { username, password, first_name, last_name } = req.body;
-
 
         if (!username || !password) {
             return next(
@@ -52,11 +52,6 @@ class AuthController {
             });
             const token = generateJwt({
                 id: user.id,
-                username: '@' + username,
-                first_name,
-                last_name,
-                role: role.role_name,
-                avatar_url: filename,
             });
             return res.json({ token });
         } catch (error) {
@@ -77,24 +72,10 @@ class AuthController {
             return next(CustomError.unauthorized('Could not sign in'));
         }
         try {
-            const role = (
-                await sequelize.query(
-                    `SELECT role_name FROM "Roles"
-                     WHERE role_id IN (
-                        SELECT MAX(role_id) FROM "UserRoles" WHERE user_id = ${user.id}
-                     )`
-                )
-            )[0][0];
             const token = generateJwt({
                 id: user.id,
-                username: user.username,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                //@ts-ignore
-                role: role.role_name,
-                avatar_url: user.avatar_url,
             });
-            
+
             return res.json({ token });
         } catch (error) {
             next(CustomError.internal(error.message));
@@ -115,7 +96,7 @@ class AuthController {
             if (!required && !token) {
                 return next();
             }
-           
+
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
             req.token = token;
             req.user = decoded;
@@ -128,9 +109,14 @@ class AuthController {
         }
     };
 
-    checkRole = (roles: string[]) => async (req, res, next) => {
-        const role = req.user.role;
-        if (!roles.includes(role)) {
+    checkRole = (roles: Roles[]) => async (req, res, next) => {
+        const role = (
+            await sequelize.query(
+                `SELECT MAX(role_id) as role FROM "UserRoles" WHERE user_id = ${req.user.id}`
+            )
+        )[0][0] as { role: Roles };
+
+        if (!roles.includes(role.role)) {
             next(CustomError.forbidden(`Permission denied`));
         }
         next();
@@ -156,7 +142,8 @@ class AuthController {
     }
     async verifyToken(req, res, next) {
         if (req.token) {
-            res.send();
+            req.params.id = req.user.id;
+            userController.get(req, res, next);
         }
     }
 }

@@ -19,7 +19,9 @@ export interface IUser {
     createdAt: string;
     followers_count: number;
     following_count: number;
+    followed_by_me: number | null;
     background_image_url: string;
+    role: Roles;
 }
 
 export interface IPost {
