@@ -26,7 +26,7 @@ class AuthController {
             const candidate = await User.findOne({ where: { username } });
 
             if (candidate) {
-                next(
+                return next(
                     new CustomError(
                         409,
                         'User with this username already exists'

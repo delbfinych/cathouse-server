@@ -1,3 +1,4 @@
+import { upload } from './multer';
 import express from 'express';
 import { config } from 'dotenv';
 import sequelize from './db';
@@ -17,6 +18,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cors());
 app.use(express.json());
 app.use('/media', express.static(path.resolve(__dirname, 'static')));
+
+app.use('/media/', upload.single('avatar_url'), (req, res) => {
+    const filename = req.file?.filename;
+    return res.json({ url: filename });
+});
 
 app.use('/api', router);
 app.use(handleError);
