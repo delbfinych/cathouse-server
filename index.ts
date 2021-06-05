@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/media', express.static(path.resolve(__dirname, 'static')));
 
-app.use(
+app.post(
     '/media/',
     authController.checkAuth('required'),
     authController.checkRole([Roles.ADMIN]),
