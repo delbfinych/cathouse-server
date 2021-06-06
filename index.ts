@@ -28,6 +28,7 @@ app.post(
     upload.single('avatar_url'),
     (req, res) => {
         const filename = req.file?.filename;
+        console.log(req.file)
         return res.json({ url: filename });
     }
 );
