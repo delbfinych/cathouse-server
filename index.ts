@@ -28,6 +28,7 @@ app.post(
     upload.fields([{ name: 'avatar_url', maxCount: 1 }]),
     fileController.uploadToRemoteServer,
     async (req, res) => {
+        //@ts-ignore
         const filename = req.files.avatar_url[0].filename;
         return res.json({ url: filename });
     }
