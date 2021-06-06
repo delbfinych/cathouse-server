@@ -11,6 +11,7 @@ import swaggerUi from 'swagger-ui-express/';
 import swaggerDocument from './swagger.json';
 import authController from './controllers/auth.controller';
 import { Roles } from './roles';
+import fileController from './controllers/file.controller';
 
 const PORT = process.env.PORT;
 const app = express();
@@ -19,19 +20,24 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(cors());
 app.use(express.json());
-app.use('/media', express.static(path.resolve(__dirname, 'static')));
-
+// app.use('/media', express.static(path.resolve(__dirname, 'static')));
 app.post(
     '/media/',
     authController.checkAuth('required'),
     authController.checkRole([Roles.ADMIN]),
-    upload.single('avatar_url'),
-    (req, res) => {
-        const filename = req.file?.filename;
-        console.log(req.file)
+    upload.fields([{ name: 'avatar_url', maxCount: 1 }]),
+    fileController.uploadToRemoteServer,
+    async (req, res) => {
+        const filename = req.files.avatar_url[0].filename;
         return res.json({ url: filename });
     }
 );
+app.use('/media', (req, res) => {
+    res.redirect(
+        'https://raw.githubusercontent.com/delbfinych/heroku-files/master' +
+            req.url
+    );
+});
 
 app.use('/api', router);
 app.use(handleError);

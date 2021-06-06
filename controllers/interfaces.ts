@@ -48,12 +48,15 @@ export interface IComment {
     attachments: [{ path: string; createdAt: string }];
 }
 
-export type IUserToken = {
-    id: number;
-    username: string;
-    first_name: string;
-    last_name: string;
-    role: Roles;
-    avatar_url: string;
+export type UserInfo = Pick<
+    IUser,
+    | 'avatar_url'
+    | 'id'
+    | 'background_image_url'
+    | 'first_name'
+    | 'last_name'
+    | 'username'
+>;
+export type AuthRequest = Express.Request & {
+    user: UserInfo;
 };
-export type AuthRequest = Express.Request & { user: IUserToken };

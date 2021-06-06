@@ -3,6 +3,7 @@ import { Router } from 'express';
 import authCtrl from '../controllers/auth.controller';
 import userCtrl from '../controllers/user.controller';
 import { upload } from '../multer';
+import fileController from '../controllers/file.controller';
 
 const router = Router();
 
@@ -15,7 +16,11 @@ router
     .post(
         '/:id',
         authCtrl.checkAuth('required'),
-        upload.single('avatar_url'),
+        upload.fields([
+            { name: 'avatar_url', maxCount: 1 },
+            { name: 'background_image_url', maxCount: 1 },
+        ]),
+        fileController.uploadToRemoteServer,
         userCtrl.update
     )
     .post('/:id/follow/', authCtrl.checkAuth('required'), userCtrl.follow)

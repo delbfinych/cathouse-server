@@ -35,7 +35,7 @@ class AuthController {
                     )
                 );
             }
-            const filename = req.file?.filename;
+            const filename = req?.files?.avatar_url?.[0]?.filename;
 
             const hashedPassword = await bcrypt.hash(password, 5);
             const user = await User.create({

@@ -9,6 +9,7 @@ import {
     IUser,
     IPost,
     AuthRequest,
+    UserInfo,
 } from './interfaces';
 config();
 type ISimpleUser = Pick<
@@ -167,26 +168,53 @@ class UsersController {
         try {
             const { id } = req.params;
             if (parseInt(id) != req.user.id) {
-                return next(CustomError.forbidden('Incorrect id'));
+                return next(CustomError.unauthorized('Unauthorized'));
             }
-            const newUserData = { ...req.user };
+            const user = (
+                await sequelize.query(
+                    `SELECT username, 
+                        last_name, 
+                        first_name,
+                        avatar_url,
+                        background_image_url 
+                FROM "Users" 
+                WHERE id = ${id}`
+                )
+            )[0][0] as UserInfo;
+            const newUserData = { ...user };
+            for (let i in newUserData) {
+                newUserData[i] = `'${newUserData[i]}'`;
+            }
             for (let key in req.body) {
                 if (req.body[key]) {
-                    newUserData[key] = req.body[key];
+                    newUserData[key] = `'${req.body[key]}'`;
                 }
             }
-            const filename = req.file?.filename;
-            if (filename) {
-                newUserData.avatar_url = filename;
-            }
+            //@ts-ignore
+            const avatarUrl = req.files?.avatar_url?.[0].filename;
+
+            newUserData.avatar_url = avatarUrl ? `'${avatarUrl}'` : null;
+
+            const backgroundImageUrl =
+                //@ts-ignore
+                req.files?.background_image_url?.[0].filename;
+
+            newUserData.background_image_url = backgroundImageUrl
+                ? `'${backgroundImageUrl}'`
+                : null;
             await sequelize.query(
-                `UPDATE "Users" SET username='${newUserData.username}', 
-                                    first_name='${newUserData.first_name}', 
-                                    last_name='${newUserData.last_name}', 
-                                    avatar_url='${newUserData.avatar_url}' 
-                 where id = ${newUserData.id}`
+                `UPDATE "Users" SET username=${newUserData.username},
+                                    first_name=${newUserData.first_name},
+                                    last_name=${newUserData.last_name},
+                                    avatar_url=${
+                                        newUserData.avatar_url || null
+                                    },
+                                    background_image_url=${
+                                        newUserData.background_image_url || null
+                                    }
+
+                 where id = ${id}`
             );
-            // TODO: Обновлять токен?
             res.json({ status: 'ok' });
             next();
         } catch (error) {
