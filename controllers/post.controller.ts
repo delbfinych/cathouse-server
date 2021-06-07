@@ -9,6 +9,7 @@ import {
     IPost,
     IComment,
 } from './interfaces';
+import { getComment } from './comment.controller';
 
 config();
 
@@ -202,11 +203,12 @@ class PostController {
         try {
             const { id } = req.params;
             const { page } = req.query;
-            
             const comments = (
                 await sequelize.query(`
-            SELECT "Comments".*, CAST(COALESCE(b.likes, 0) AS INTEGER) AS likes_count, 
-                                 CAST(COALESCE((b.total - b.likes), 0) AS INTEGER) AS dislikes_count 
+            SELECT "Comments".*, 
+                    CAST(COALESCE(b.likes, 0) AS INTEGER) AS likes_count, 
+                    CAST(COALESCE((b.total - b.likes), 0) AS INTEGER) AS dislikes_count,
+                    likesTable.liked liked_by_me
             FROM "Comments"
             LEFT JOIN (SELECT comment_id, 
                               COUNT(*) AS total, 
@@ -214,9 +216,18 @@ class PostController {
                        FROM "CommentLikes" GROUP BY comment_id
                        ) 
             AS b ON "Comments".comment_id = b.comment_id
+            
+
+           
+
+            LEFT JOIN (SELECT liked, comment_id FROM "CommentLikes" where user_id = ${
+                req?.user?.id ?? null
+            }) 
+            AS likesTable ON "Comments".comment_id = likesTable.comment_id 
+
             WHERE "Comments".post_id = ${id}
-            ORDER BY "Comments".comment_id LIMIT ${LIMIT} OFFSET ${
-                LIMIT * (page - 1)
+            ORDER BY "Comments".comment_id ASC LIMIT ${LIMIT} OFFSET ${
+                    LIMIT * (page - 1)
                 }`)
             )[0] as IComment[];
             const details = (
@@ -253,12 +264,7 @@ class PostController {
                 body: message,
                 post_id: id,
             });
-            res.json({
-                //@ts-ignore
-                ...comment.dataValues,
-                likes_count: 0,
-                dislikes_count: 0,
-            });
+            res.json(await getComment(comment.comment_id, null));
         } catch (error) {
             next(CustomError.internal(error.message));
         }

@@ -9,14 +9,20 @@ enum Like {
     DISLIKE = 0,
 }
 
-
-
-const getComment = async (comment_id): Promise<IComment | null> => {
+export const getComment = async (comment_id, user_id): Promise<IComment | null> => {
     const comment = (
         await sequelize.query(
-            `select "Comments".*, CAST(coalesce(b.likes, 0) as INTEGER) as likes_count, CAST(coalesce((b.total - b.likes), 0) as INTEGER) as dislikes_count from "Comments"
+            `select "Comments".*, 
+                    CAST(coalesce(b.likes, 0) as INTEGER) as likes_count, 
+                    CAST(coalesce((b.total - b.likes), 0) as INTEGER) as dislikes_count,
+                    likesTable.liked liked_by_me
+            FROM "Comments"
             left join (select comment_id, count(*) as total, SUM(liked) as likes from "CommentLikes" group by comment_id) 
             as b on "Comments".comment_id = b.comment_id
+
+            LEFT JOIN (SELECT liked, comment_id FROM "CommentLikes" where user_id = ${user_id}) 
+            AS likesTable ON "Comments".comment_id = likesTable.comment_id
+
             where "Comments".comment_id = ${comment_id}`
         )
     )[0][0] as IComment;
@@ -33,7 +39,7 @@ class CommentController {
     async get(req, res, next) {
         try {
             const { id } = req.params;
-            const comment = await getComment(id);
+            const comment = await getComment(id, req?.user?.id ?? null);
             if (!comment) {
                 return next(CustomError.notFound('Comment was not found'));
             }
@@ -73,7 +79,7 @@ class CommentController {
             const { message } = req.body;
             const userId = req.user.id;
 
-            const comment = await getComment(id);
+            const comment = await getComment(id, userId);
             if (!comment || comment.author_id !== userId || !message) {
                 return next(CustomError.forbidden('Could not update comment'));
             }

@@ -12,7 +12,7 @@ router
     .delete('/:id', authCtrl.checkAuth('required'), postCtrl.delete)
     .post('/:id/like', authCtrl.checkAuth('required'), postCtrl.like)
     .post('/:id/dislike', authCtrl.checkAuth('required'), postCtrl.dislike)
-    .get('/:id/comments', postCtrl.getCommentsByPostId)
+    .get('/:id/comments', authCtrl.checkAuth(), postCtrl.getCommentsByPostId)
     .post('/:id/comments', authCtrl.checkAuth('required'), postCtrl.addComment)
     // .post(
     //     '/:id/media',
