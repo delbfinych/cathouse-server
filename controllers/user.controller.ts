@@ -170,11 +170,9 @@ class UsersController {
             }
 
             const newUserData = { ...req.body };
-            if (newUserData.username?.length) {
-                newUserData.username = '@' + newUserData.username;
-            }
+            console.log(newUserData);
             const convert = (str: any) => (str ? `'${str}'` : null);
-            await sequelize.query(
+            const kek = await sequelize.query(
                 `UPDATE "Users" SET username=${convert(newUserData.username)},
                                     first_name=${convert(
                                         newUserData.first_name
