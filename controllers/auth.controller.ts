@@ -91,23 +91,16 @@ class AuthController {
         });
     }
 
-    checkAuth = (required?: 'required') => async (req, res, next) => {
+    checkAuth = () => async (req, res, next) => {
         try {
             const token = req.headers.authorization?.split(' ')[1];
-
-            if (!required && !token) {
-                return next();
-            }
 
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
             req.token = token;
             req.user = decoded;
             next();
         } catch (e) {
-            if (required) {
-                return next(CustomError.unauthorized('Unauthorized'));
-            }
-            return next();
+            return next(CustomError.unauthorized('Unauthorized'));
         }
     };
 

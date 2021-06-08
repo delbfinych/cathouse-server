@@ -11,8 +11,8 @@ router
         authCtrl.signUp
     )
     .post('/signin', authCtrl.signIn)
-    .get('/signout', authCtrl.checkAuth('required'), authCtrl.signOut)
+    .get('/signout', authCtrl.checkAuth(), authCtrl.signOut)
     .get('/verifyUserName', authCtrl.verifyUserName)
-    .get('/verifyToken', authCtrl.checkAuth('required'), authCtrl.verifyToken);
+    .get('/verifyToken', authCtrl.checkAuth(), authCtrl.verifyToken);
 
 export default router;

@@ -7,10 +7,10 @@ const router = Router();
 
 router
     .get('/:id', commentCtrl.get)
-    .post('/:id', authCtrl.checkAuth('required'), commentCtrl.update)
-    .delete('/:id', authCtrl.checkAuth('required'), commentCtrl.delete)
-    .post('/:id/like', authCtrl.checkAuth('required'), commentCtrl.like)
-    .post('/:id/dislike', authCtrl.checkAuth('required'), commentCtrl.dislike)
+    .post('/:id', authCtrl.checkAuth(), commentCtrl.update)
+    .delete('/:id', authCtrl.checkAuth(), commentCtrl.delete)
+    .post('/:id/like', authCtrl.checkAuth(), commentCtrl.like)
+    .post('/:id/dislike', authCtrl.checkAuth(), commentCtrl.dislike)
     // .post(
     //     '/:id/media',
     //     authCtrl.checkAuth('required'),

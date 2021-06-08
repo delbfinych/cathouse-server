@@ -11,18 +11,22 @@ router
     .get('/', userCtrl.index)
     .get('/search', userCtrl.search)
     .get('/:id', authCtrl.checkAuth(), userCtrl.get)
-    .get('/:id/followers', authCtrl.checkAuth(), userCtrl.getFollowersById)
-    .get('/:id/following', authCtrl.checkAuth(), userCtrl.getFollowingById)
-    .post(
-        '/:id',
-        authCtrl.checkAuth('required'),
-        userCtrl.update
+    .get(
+        '/:id/followers',
+        authCtrl.checkAuth(),
+        userCtrl.getFollowersById
     )
-    .post('/:id/follow/', authCtrl.checkAuth('required'), userCtrl.follow)
-    .post('/:id/unfollow', authCtrl.checkAuth('required'), userCtrl.unfollow)
+    .get(
+        '/:id/following',
+        authCtrl.checkAuth(),
+        userCtrl.getFollowingById
+    )
+    .post('/:id', authCtrl.checkAuth(), userCtrl.update)
+    .post('/:id/follow/', authCtrl.checkAuth(), userCtrl.follow)
+    .post('/:id/unfollow', authCtrl.checkAuth(), userCtrl.unfollow)
     .post(
         '/:id/giveRole',
-        authCtrl.checkAuth('required'),
+        authCtrl.checkAuth(),
         authCtrl.checkRole([Roles.ADMIN]),
         userCtrl.giveRole
     )
