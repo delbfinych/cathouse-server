@@ -28,19 +28,19 @@ class FileController {
             if (req.files) {
                 req.files = Object.values(req.files)[0]
                 for (let file of req.files) {
-                    // const fstr = fs.createReadStream(`./static/${file.filename}`);
-                    // const form = new FormData();
-                    // form.append('filename', fstr);
-                    // const res = await fetch(
-                    //     'https://secure-ridge-70714.herokuapp.com/put',
-                    //     {
-                    //         method: 'POST',
-                    //         body: form,
-                    //     }
-                    // );
-                    // if (!res.ok) {
-                    //     throw Error(res.statusText);
-                    // }
+                    const fstr = fs.createReadStream(`./static/${file.filename}`);
+                    const form = new FormData();
+                    form.append('filename', fstr);
+                    const res = await fetch(
+                        'https://secure-ridge-70714.herokuapp.com/put',
+                        {
+                            method: 'POST',
+                            body: form,
+                        }
+                    );
+                    if (!res.ok) {
+                        throw Error(res.statusText);
+                    }
                 }
                 return next();
             }

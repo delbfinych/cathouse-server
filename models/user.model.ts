@@ -9,6 +9,7 @@ interface Attributes {
     last_name: string;
     avatar_url?: string;
     background_image_url?: string;
+    description?: string;
 }
 
 interface OptionalAttributes extends Optional<Attributes, 'id'> {}
@@ -44,6 +45,10 @@ export const Users = sequelize.define<Instance>('Users', {
     },
     background_image_url: {
         type: DataTypes.STRING,
+        allowNull: true,
+    },
+    description: {
+        type: DataTypes.TEXT,
         allowNull: true,
     },
 });
