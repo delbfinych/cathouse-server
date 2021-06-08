@@ -3,6 +3,7 @@ import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { CommentLikes, Comment } from '../models/models';
 import { IComment } from './interfaces';
+import { getRole } from './someQueries';
 
 enum Like {
     LIKE = 1,
@@ -57,7 +58,9 @@ class CommentController {
             const options = {
                 comment_id: id,
             };
-            if (req.user.role === Roles.USER) {
+
+            const role = await getRole(req.user.id);
+            if (role.role === Roles.USER) {
                 options['author_id'] = userId;
             }
             const comment = await Comment.destroy({

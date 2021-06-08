@@ -10,6 +10,7 @@ import {
     IComment,
 } from './interfaces';
 import { getComment } from './comment.controller';
+import { getRole } from './someQueries';
 
 config();
 
@@ -91,12 +92,15 @@ class PostController {
             const options = {
                 post_id: id,
             };
-            if (req.user.role === Roles.USER) {
+
+            const role = await getRole(req.user.id);
+            if (role.role === Roles.USER) {
                 options['author_id'] = userId;
             }
             const post = await Post.destroy({
                 where: options,
             });
+
             if (!post) {
                 return next(CustomError.forbidden('Could not delete post'));
             } else {

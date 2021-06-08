@@ -4,6 +4,7 @@ import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { User, UserRole, Role } from '../models/models';
 import { Roles } from '../roles';
+import { getRole } from './someQueries';
 import userController from './user.controller';
 
 const generateJwt = (obj) => {
@@ -105,11 +106,7 @@ class AuthController {
     };
 
     checkRole = (roles: Roles[]) => async (req, res, next) => {
-        const role = (
-            await sequelize.query(
-                `SELECT MAX(role_id) as role FROM "UserRoles" WHERE user_id = ${req.user.id}`
-            )
-        )[0][0] as { role: Roles };
+        const role = await getRole(req.user.id);
 
         if (!roles.includes(role.role)) {
             next(CustomError.forbidden(`Permission denied`));

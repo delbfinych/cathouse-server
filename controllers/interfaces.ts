@@ -49,15 +49,7 @@ export interface IComment {
     attachments: [{ path: string; createdAt: string }];
 }
 
-export type UserInfo = Pick<
-    IUser,
-    | 'avatar_url'
-    | 'id'
-    | 'background_image_url'
-    | 'first_name'
-    | 'last_name'
-    | 'username'
->;
+export type UserInfo = Pick<IUser, 'id'>;
 export type ISimpleUser = Pick<
     IUser,
     | 'id'
