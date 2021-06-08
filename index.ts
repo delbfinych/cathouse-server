@@ -21,24 +21,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cors());
 app.use(express.json());
 // app.use('/media', express.static(path.resolve(__dirname, 'static')));
-app.post(
-    '/media/',
-    authController.checkAuth('required'),
-    authController.checkRole([Roles.ADMIN]),
-    upload.fields([{ name: 'avatar_url', maxCount: 1 }]),
-    fileController.uploadToRemoteServer,
-    async (req, res) => {
-        //@ts-ignore
-        const filename = req.files.avatar_url[0].filename;
-        return res.json({ url: filename });
-    }
-);
-app.use('/media', (req, res) => {
-    res.redirect(
-        'https://raw.githubusercontent.com/delbfinych/heroku-files/master' +
-            req.url
-    );
-});
+
 
 app.use('/api', router);
 app.use(handleError);

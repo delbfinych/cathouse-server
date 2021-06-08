@@ -10,12 +10,10 @@ import {
     IPost,
     AuthRequest,
     UserInfo,
+    ISimpleUser,
 } from './interfaces';
 config();
-type ISimpleUser = Pick<
-    IUser,
-    'id' | 'avatar_url' | 'username' | 'first_name' | 'last_name'
->;
+
 const LIMIT = 10;
 class UsersController {
     async index(req, res, next) {
@@ -170,48 +168,27 @@ class UsersController {
             if (parseInt(id) != req.user.id) {
                 return next(CustomError.unauthorized('Unauthorized'));
             }
-            const user = (
-                await sequelize.query(
-                    `SELECT username, 
-                        last_name, 
-                        first_name,
-                        avatar_url,
-                        background_image_url 
-                FROM "Users" 
-                WHERE id = ${id}`
-                )
-            )[0][0] as UserInfo;
-            const newUserData = { ...user };
-            for (let i in newUserData) {
-                newUserData[i] = `'${newUserData[i]}'`;
+
+            const newUserData = { ...req.body };
+            if (newUserData.username?.length) {
+                newUserData.username = '@' + newUserData.username;
             }
-            for (let key in req.body) {
-                if (req.body[key]) {
-                    newUserData[key] = `'${req.body[key]}'`;
-                }
-            }
-            //@ts-ignore
-            const avatarUrl = req.files?.avatar_url?.[0].filename;
-
-            newUserData.avatar_url = avatarUrl ? `'${avatarUrl}'` : null;
-
-            const backgroundImageUrl =
-                //@ts-ignore
-                req.files?.background_image_url?.[0].filename;
-
-            newUserData.background_image_url = backgroundImageUrl
-                ? `'${backgroundImageUrl}'`
-                : null;
+            const convert = (str: any) => (str ? `'${str}'` : null);
             await sequelize.query(
-                `UPDATE "Users" SET username=${newUserData.username},
-                                    first_name=${newUserData.first_name},
-                                    last_name=${newUserData.last_name},
-                                    avatar_url=${
-                                        newUserData.avatar_url || null
-                                    },
-                                    background_image_url=${
-                                        newUserData.background_image_url || null
-                                    }
+                `UPDATE "Users" SET username=${convert(newUserData.username)},
+                                    first_name=${convert(
+                                        newUserData.first_name
+                                    )},
+                                    last_name=${convert(newUserData.last_name)},
+                                    avatar_url=${convert(
+                                        newUserData.avatar_url
+                                    )},
+                                    background_image_url=${convert(
+                                        newUserData.background_image_url
+                                    )},
+                                    description=${convert(
+                                        newUserData.description
+                                    )}
 
                  where id = ${id}`
             );

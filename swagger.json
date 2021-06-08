@@ -647,29 +647,34 @@
                 "summary": "Create an account",
                 "parameters": [
                     {
-                        "name": "avatar_url",
-                        "in": "formData",
-                        "type": "file"
-                    },
-                    {
-                        "name": "username",
-                        "in": "formData",
-                        "type": "string"
-                    },
-                    {
-                        "name": "first_name",
-                        "in": "formData",
-                        "type": "string"
-                    },
-                    {
-                        "name": "last_name",
-                        "in": "formData",
-                        "type": "string"
-                    },
-                    {
-                        "name": "password",
-                        "in": "formData",
-                        "type": "string"
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "last_name": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "first_name": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "avatar_url": {
+                                    "type": "string",
+                                    "required": false
+                                }
+                            }
+                        }
                     }
                 ],
                 "responses": {

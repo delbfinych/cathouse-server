@@ -26,28 +26,25 @@ class FileController {
     async uploadToRemoteServer(req, res, next) {
         try {
             if (req.files) {
-                for (let file of Object.values(req.files)) {
-                    const filename = file[0].filename;
-                    console.log(filename);
-                    const fstr = fs.createReadStream(`./static/${filename}`);
-                    const form = new FormData();
-                    form.append('filename', fstr);
-                    const res = await fetch(
-                        'https://secure-ridge-70714.herokuapp.com/put',
-                        {
-                            method: 'POST',
-                            body: form,
-                        }
-                    );
-                    if (!res.ok) {
-                        throw Error(res.statusText);
-                    }
+                req.files = Object.values(req.files)[0]
+                for (let file of req.files) {
+                    // const fstr = fs.createReadStream(`./static/${file.filename}`);
+                    // const form = new FormData();
+                    // form.append('filename', fstr);
+                    // const res = await fetch(
+                    //     'https://secure-ridge-70714.herokuapp.com/put',
+                    //     {
+                    //         method: 'POST',
+                    //         body: form,
+                    //     }
+                    // );
+                    // if (!res.ok) {
+                    //     throw Error(res.statusText);
+                    // }
                 }
-
+                return next();
             }
-            console.log(req.files)
-
-            next();
+            throw CustomError.badRequest("0 files uploaded")
         } catch (error) {
             next(CustomError.internal(error.message));
         }

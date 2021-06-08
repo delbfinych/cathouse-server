@@ -22,6 +22,7 @@ export interface IUser {
     followed_by_me: number | null;
     background_image_url: string;
     role: Roles;
+    description: string;
 }
 
 export interface IPost {
@@ -56,6 +57,15 @@ export type UserInfo = Pick<
     | 'first_name'
     | 'last_name'
     | 'username'
+>;
+export type ISimpleUser = Pick<
+    IUser,
+    | 'id'
+    | 'avatar_url'
+    | 'username'
+    | 'first_name'
+    | 'last_name'
+    | 'followed_by_me'
 >;
 export type AuthRequest = Express.Request & {
     user: UserInfo;

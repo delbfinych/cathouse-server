@@ -8,8 +8,6 @@ const router = Router();
 router
     .post(
         '/signup',
-        upload.fields([{ name: 'avatar_url', maxCount: 1 }]),
-        fileController.uploadToRemoteServer,
         authCtrl.signUp
     )
     .post('/signin', authCtrl.signIn)

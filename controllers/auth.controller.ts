@@ -12,14 +12,15 @@ const generateJwt = (obj) => {
 
 class AuthController {
     async signUp(req, res, next) {
-        const { username, password, first_name, last_name } = req.body;
+        const { username, password, first_name, last_name, avatar_url } =
+            req.body;
 
-        if (!username || !password) {
+        if (!username?.length || !password?.length) {
             return next(
                 CustomError.unauthorized('Incorrect username or password')
             );
         }
-        if (!last_name || !first_name) {
+        if (!last_name?.length || !first_name?.length) {
             return next(CustomError.unauthorized('Incorrect user data'));
         }
         try {
@@ -35,7 +36,6 @@ class AuthController {
                     )
                 );
             }
-            const filename = req?.files?.avatar_url?.[0]?.filename;
 
             const hashedPassword = await bcrypt.hash(password, 5);
             const user = await User.create({
@@ -43,7 +43,7 @@ class AuthController {
                 password: hashedPassword,
                 first_name,
                 last_name,
-                avatar_url: filename,
+                avatar_url,
             });
             const role = await Role.findOne({
                 where: { role_id: Roles.USER },
