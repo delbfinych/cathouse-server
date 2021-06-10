@@ -31,8 +31,7 @@ Roles.hasMany(UserRoles, {
     foreignKey: 'role_id',
 });
 
-Posts.hasMany(Comments);
-Comments.belongsTo(Posts, {
+Posts.hasMany(Comments, {
     foreignKey: 'post_id',
 });
 
@@ -59,11 +58,7 @@ Comments.hasMany(ProfileImages, {
     foreignKeyConstraint: true,
 });
 
-// Comments.hasMany(CommentAttachment);
-// CommentAttachment.belongsTo(Comments, { foreignKey: 'comment_id' });
 
-// Posts.hasMany(PostAttachment);
-// PostAttachment.belongsTo(Posts, { foreignKey: 'post_id' });
 
 export {
     Comments as Comment,
