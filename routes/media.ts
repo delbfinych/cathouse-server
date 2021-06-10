@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import fileController from '../controllers/file.controller';
+import authController from '../controllers/auth.controller';
+import mediaController from '../controllers/media.controller';
 import { upload } from '../multer';
 const router = Router();
 
@@ -13,11 +14,12 @@ router
     .post(
         '/',
         upload.fields([{ name: 'image', maxCount: 10 }]),
-        fileController.uploadToRemoteServer,
+        mediaController.uploadToRemoteServer,
         (req, res) => {
             //@ts-ignore
             return res.json([...req.files.map((file) => file.filename)]);
         }
-    );
+    )
+    .post('/attach', authController.checkAuth(), mediaController.attachImage);
 
 export default router;

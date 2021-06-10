@@ -24,7 +24,8 @@ class UsersController {
                 SELECT  "Users".*, 
                         CAST(COALESCE(qq.followers_count, 0) AS INTEGER) AS followers_count,
                         CAST(COALESCE(b.following_count, 0) AS INTEGER) AS following_count,
-                        roles.max as role
+                        t.following_id followed_by_me,
+                        roles.role_id as role
                 FROM "Users"
                 LEFT JOIN   (SELECT follower_id, 
                                     count(*) AS following_count 
@@ -35,8 +36,14 @@ class UsersController {
                             FROM "Followers" GROUP BY following_id) 
                 AS qq ON "Users".id = qq.following_id
 
-                JOIN (SELECT MAX(role_id) max, "UserRoles".user_id 
-                FROM "UserRoles" GROUP BY "UserRoles".user_id) 
+                LEFT JOIN (SELECT  "Followers".following_id 
+                FROM "Followers" where follower_id = ${
+                    req?.user?.id ?? null
+                } GROUP BY following_id ) 
+                AS t ON t.following_id = "Users".id
+
+                JOIN (SELECT role_id, "UserRoles".user_id 
+                FROM "UserRoles") 
                 as roles on roles.user_id = "Users".id
 
                 LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)} 
@@ -79,7 +86,7 @@ class UsersController {
                         CAST(COALESCE(qq.followers_count, 0) AS INTEGER) followers_count,
                         CAST(COALESCE(b.following_count, 0) AS INTEGER) following_count,
                         t.following_id followed_by_me,
-                        roles.max as role
+                        roles.role_id as role
                 FROM "Users"
                 LEFT JOIN   (SELECT follower_id, 
                                     count(*) AS following_count 
@@ -96,8 +103,8 @@ class UsersController {
                 } GROUP BY following_id ) 
                 AS t ON t.following_id = "Users".id
                 
-                JOIN (SELECT MAX(role_id) max, "UserRoles".user_id 
-                FROM "UserRoles" GROUP BY "UserRoles".user_id) 
+                JOIN (SELECT role_id, "UserRoles".user_id 
+                FROM "UserRoles") 
                 as roles on roles.user_id = "Users".id
 
                 WHERE "Users".id = ${id}`)
@@ -477,6 +484,41 @@ class UsersController {
             res.json(response);
         } catch (error) {
             CustomError.internal(error.message);
+        }
+    }
+    async getImages(req, res, next) {
+        try {
+            const { id } = req.params;
+            const { page = 1 } = req.query;
+
+            const images = (
+                await sequelize.query(`
+            SELECT "ProfileImages".url
+                    
+            FROM "ProfileImages"
+    
+            WHERE author_id = ${id} and post_id IS NOT NULL
+            
+            LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)}
+            `)
+            )[0] as { url: string }[];
+
+            const details = (
+                await sequelize.query(`
+                SELECT CAST(COUNT(*) AS INTEGER) total_count, 
+                       CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
+                FROM "ProfileImages" 
+                WHERE author_id = ${id} and post_id IS NOT NULL
+            `)
+            )[0][0] as IPaginationInfo;
+            res.json({
+                page: parseInt(page),
+                result: images.map((obj) => obj.url),
+                total_count: details.total_count,
+                total_pages: details.total_pages,
+            } as IPaginationResponse<string>);
+        } catch (error) {
+            next(CustomError.internal(error.message));
         }
     }
 }

@@ -62,3 +62,9 @@ export type ISimpleUser = Pick<
 export type AuthRequest = Express.Request & {
     user: UserInfo;
 };
+
+export interface AttachmentsRequest {
+    post_id?: number;
+    comment_id?: number;
+    body: string[];
+}

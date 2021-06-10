@@ -6,46 +6,57 @@ import { Users } from './user.model';
 import { UserRoles } from './userRole.model';
 import { Likes } from './likes.model';
 import { CommentLikes } from './commentLikes.model';
+import { ProfileImages } from './profileImages';
 // import { CommentAttachment } from './commentAttachment.model';
 // import { PostAttachment } from './postAttachment.model';
 // import { Media } from './media.model';
 import { File } from './file.model';
 
-Users.hasMany(File);
-File.belongsTo(Users, {
+Users.hasMany(File, {
     foreignKey: 'user_id',
 });
-Users.hasMany(Posts);
-Posts.belongsTo(Users, {
+
+Users.hasMany(Posts, {
     foreignKey: 'author_id',
 });
 
 Users.hasMany(Followers);
 Followers.belongsToMany(Users, { through: FollowerUser });
 
-Users.hasMany(UserRoles);
-UserRoles.belongsTo(Users, {
+Users.hasMany(UserRoles, {
     foreignKey: 'user_id',
 });
 
-UserRoles.belongsTo(Roles, {
+Roles.hasMany(UserRoles, {
     foreignKey: 'role_id',
 });
-Roles.hasMany(UserRoles);
 
 Posts.hasMany(Comments);
 Comments.belongsTo(Posts, {
     foreignKey: 'post_id',
 });
 
-Posts.hasMany(Likes);
-Likes.belongsTo(Posts, {
+Posts.hasMany(Likes, {
     foreignKey: 'post_id',
 });
 
-Posts.hasMany(CommentLikes);
-CommentLikes.belongsTo(Posts, {
+Comments.hasMany(CommentLikes, {
+    foreignKey: 'comment_id',
+});
+
+Users.hasMany(ProfileImages, {
+    foreignKey: 'author_id',
+    foreignKeyConstraint: true,
+});
+
+Posts.hasMany(ProfileImages, {
     foreignKey: 'post_id',
+    foreignKeyConstraint: true,
+});
+
+Comments.hasMany(ProfileImages, {
+    foreignKey: 'comment_id',
+    foreignKeyConstraint: true,
 });
 
 // Comments.hasMany(CommentAttachment);
@@ -64,4 +75,5 @@ export {
     Users as User,
     CommentLikes,
     File,
+    ProfileImages
 };

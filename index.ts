@@ -11,7 +11,7 @@ import swaggerUi from 'swagger-ui-express/';
 import swaggerDocument from './swagger.json';
 import authController from './controllers/auth.controller';
 import { Roles } from './roles';
-import fileController from './controllers/file.controller';
+import mediaController from './controllers/media.controller';
 
 const PORT = process.env.PORT;
 const app = express();
