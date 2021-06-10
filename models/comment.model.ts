@@ -23,7 +23,7 @@ export const Comments = sequelize.define<Instance>('Comments', {
         allowNull: false,
     },
     body: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     author_id: {
