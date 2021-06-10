@@ -8,7 +8,9 @@ import { getRole } from './someQueries';
 import userController from './user.controller';
 
 const generateJwt = (obj) => {
-    return jwt.sign({ ...obj }, process.env.SECRET_KEY);
+    return jwt.sign({ ...obj }, process.env.SECRET_KEY, {
+        expiresIn: '24h',
+    });
 };
 
 class AuthController {
