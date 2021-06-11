@@ -2,40 +2,14 @@ import { Roles } from './../roles';
 import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { CommentLikes, Comment } from '../models/models';
-import { IComment } from './interfaces';
-import { getRole, getCommentAttachments } from './someQueries';
+import { getRole, getCommentAttachments, getComment } from './someQueries';
 
 enum Like {
     LIKE = 1,
     DISLIKE = 0,
 }
 
-export const getComment = async (
-    comment_id,
-    user_id
-): Promise<IComment | null> => {
-    const comment = (
-        await sequelize.query(
-            `select "Comments".*, 
-                    CAST(coalesce(b.likes, 0) as INTEGER) as likes_count, 
-                    CAST(coalesce((b.total - b.likes), 0) as INTEGER) as dislikes_count,
-                    likesTable.liked liked_by_me
-            FROM "Comments"
-            left join (select comment_id, count(*) as total, SUM(liked) as likes from "CommentLikes" group by comment_id) 
-            as b on "Comments".comment_id = b.comment_id
 
-            LEFT JOIN (SELECT liked, comment_id FROM "CommentLikes" where user_id = ${user_id}) 
-            AS likesTable ON "Comments".comment_id = likesTable.comment_id
-
-            where "Comments".comment_id = ${comment_id}`
-        )
-    )[0][0] as IComment;
-    if (!comment) {
-        return null;
-    }
-    comment.attachments = await getCommentAttachments(comment_id);
-    return comment;
-};
 class CommentController {
     async get(req, res, next) {
         try {

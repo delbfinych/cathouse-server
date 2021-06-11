@@ -6,7 +6,7 @@ import { upload } from '../multer';
 const router = Router();
 
 router
-    .get('/:id', commentCtrl.get)
+    .get('/:id', authCtrl.checkAuth(), commentCtrl.get)
     .post('/:id', authCtrl.checkAuth(), commentCtrl.update)
     .delete('/:id', authCtrl.checkAuth(), commentCtrl.delete)
     .post('/:id/like', authCtrl.checkAuth(), commentCtrl.like)

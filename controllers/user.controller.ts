@@ -407,7 +407,10 @@ class UsersController {
             )[0] as IPost[];
             const details = (
                 await sequelize.query(`
-            SELECT CAST(COUNT(*) AS INTEGER) total_count , CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages FROM "Posts" WHERE "Posts".author_id in (SELECT following_id as id 
+            SELECT CAST(COUNT(*) AS INTEGER) total_count, 
+            CEILING (CAST(COUNT(*) AS FLOAT) / ${LIMIT}) total_pages 
+            FROM "Posts" 
+            WHERE "Posts".author_id in (SELECT following_id as id 
                 FROM "Followers"
                 WHERE follower_id = ${id}
                 UNION ALL 

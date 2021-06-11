@@ -23,6 +23,7 @@ router
             res.send(await response.buffer());
         }
     })
+    .delete('/:path', authController.checkAuth(), async (req, res) => {})
     .post(
         '/',
         upload.fields([{ name: 'image', maxCount: 10 }]),

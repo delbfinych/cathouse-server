@@ -9,8 +9,13 @@ import {
     IPost,
     IComment,
 } from './interfaces';
-import { getComment } from './comment.controller';
-import { getRole, getPostAttachments, getCommentAttachments } from './someQueries';
+import {
+    getRole,
+    getPostAttachments,
+    getCommentAttachments,
+    getPost,
+    getComment,
+} from './someQueries';
 
 config();
 
@@ -21,44 +26,6 @@ enum Like {
 
 const LIMIT = 10;
 
-const getPost = async (post_id, user_id): Promise<IPost | null> => {
-    const post = (
-        await sequelize.query(`
-            SELECT "Posts".*, 
-                    CAST(COALESCE(b.likes, 0) AS INTEGER) likes_count, 
-                    CAST(COALESCE((b.total - b.likes), 0) AS INTEGER) dislikes_count,
-                    likesTable.liked liked_by_me,
-                    CAST(COALESCE(comments.count, 0) AS INTEGER) comments_count,
-                    "Users".first_name as author_first_name,
-                    "Users".last_name as author_last_name,
-                    "Users".avatar_url as author_avatar_url
-            FROM "Posts"
-
-            LEFT JOIN  (SELECT post_id, 
-                    COUNT(*) total, 
-                    SUM(liked) likes 
-                  FROM "Likes" GROUP BY post_id) 
-            AS b ON "Posts".post_id = b.post_id
-
-            LEFT JOIN (SELECT liked, post_id FROM "Likes" where user_id = ${user_id}) 
-            AS likesTable ON likesTable.post_id = "Posts".post_id
-
-            LEFT JOIN (SELECT COUNT(*), 
-                       post_id FROM "Comments"
-                       GROUP BY post_id) comments
-            ON comments.post_id = "Posts".post_id
-
-            JOIN "Users" on "Users".id = "Posts".author_id
-
-            WHERE "Posts".post_id = ${post_id}`)
-    )[0][0] as IPost;
-    if (!post) {
-        return null;
-    }
-    post.attachments = await getPostAttachments(post_id);
-
-    return post;
-};
 class PostController {
     async get(req, res, next) {
         try {
@@ -284,49 +251,6 @@ class PostController {
         } catch (error) {
             next(CustomError.internal(error.message));
         }
-    }
-    async attachFiles(req, res, next) {
-        // try {
-        //     const { id } = req.params;
-        //     const userId = req.user.id;
-        //     const post = await Post.findOne({
-        //         where: { post_id: id, author_id: userId },
-        //     });
-        //     if (!post) {
-        //         return next(CustomError.forbidden('Could not attach file'));
-        //     }
-        //     for (let file of req.files) {
-        //         await PostAttachment.create({
-        //             path: file.filename,
-        //             user_id: userId,
-        //             post_id: id,
-        //         });
-        //     }
-        //     res.json({ paths: req.files.map((path) => path.filename) });
-        // } catch (error) {
-        //     next(CustomError.internal(error.message));
-        // }
-    }
-    async detachFiles(req, res, next) {
-        // try {
-        //     const { id } = req.params;
-        //     const userId = req.user.id;
-        //     const filenames = req.body.filenames;
-        //     const post = await Post.findOne({
-        //         where: { post_id: id, author_id: userId },
-        //     });
-        //     if (!post) {
-        //         return next(CustomError.forbidden('Could not detach file'));
-        //     }
-        //     for (let file of filenames) {
-        //         await PostAttachment.destroy({
-        //             where: { post_id: id, path: file },
-        //         });
-        //     }
-        //     res.json({ status: 'ok' });
-        // } catch (error) {
-        //     next(CustomError.internal(error.message));
-        // }
     }
 }
 

@@ -23,8 +23,9 @@ Users.hasMany(Posts, {
 Users.hasMany(Followers);
 Followers.belongsToMany(Users, { through: FollowerUser });
 
-Users.hasMany(UserRoles, {
+Users.hasOne(UserRoles, {
     foreignKey: 'user_id',
+    onDelete: 'cascade',
 });
 
 Roles.hasMany(UserRoles, {
@@ -33,32 +34,36 @@ Roles.hasMany(UserRoles, {
 
 Posts.hasMany(Comments, {
     foreignKey: 'post_id',
+    onDelete: 'cascade',
 });
 
 Posts.hasMany(Likes, {
     foreignKey: 'post_id',
+    onDelete: 'cascade',
 });
 
 Comments.hasMany(CommentLikes, {
     foreignKey: 'comment_id',
+    onDelete: 'cascade',
 });
 
 Users.hasMany(ProfileImages, {
     foreignKey: 'author_id',
     foreignKeyConstraint: true,
+    onDelete: 'cascade',
 });
 
 Posts.hasMany(ProfileImages, {
     foreignKey: 'post_id',
     foreignKeyConstraint: true,
+    onDelete: 'cascade',
 });
 
 Comments.hasMany(ProfileImages, {
     foreignKey: 'comment_id',
     foreignKeyConstraint: true,
+    onDelete: 'cascade',
 });
-
-
 
 export {
     Comments as Comment,
@@ -70,5 +75,5 @@ export {
     Users as User,
     CommentLikes,
     File,
-    ProfileImages
+    ProfileImages,
 };
