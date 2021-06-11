@@ -8,7 +8,7 @@ const router = Router();
 const permitted = ['http://localhost:3000/', 'https://cathouse.vercel.app/'];
 router
     .get('/:path', async (req, res) => {
-        if (permitted.includes(req.headers.referer)) {
+        if (!permitted.includes(req.headers.referer)) {
             res.sendStatus(403);
         } else {
             const response = await fetch(
