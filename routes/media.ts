@@ -8,16 +8,17 @@ const router = Router();
 const permitted = ['http://localhost:3000/', 'https://cathouse.vercel.app/'];
 router
     .get('/:path', async (req, res) => {
-        if (!permitted.includes(req.headers.referer)) {
+        if (permitted.includes(req.headers.referer)) {
             res.sendStatus(403);
         } else {
-            const imgLink = await (
-                await fetch(
-                    `${process.env.REMOTE_SERVER_URL}/get?filename=${req.url}`
-                )
-            ).text();
-
-            const response = await fetch(imgLink);
+            const response = await fetch(
+                `${process.env.IMAGE_REMOTE_URL}/${req.url}`,
+                {
+                    headers: {
+                        Authorization: 'token ' + process.env.GH_ACCESS_TOKEN,
+                    },
+                }
+            );
             res.set({ 'content-type': response.headers.get('content-type') });
             res.send(await response.buffer());
         }

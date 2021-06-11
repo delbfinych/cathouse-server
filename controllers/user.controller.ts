@@ -177,7 +177,6 @@ class UsersController {
             }
 
             const newUserData = { ...req.body };
-            console.log(newUserData);
             const convert = (str: any) => (str ? `'${str}'` : null);
             const kek = await sequelize.query(
                 `UPDATE "Users" SET username=${convert(newUserData.username)},

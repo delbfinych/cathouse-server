@@ -10,6 +10,24 @@ import { AttachmentsRequest } from './interfaces';
 config();
 
 class MediaController {
+    // async deleteImage(req, res, next) {
+    //     try {
+    //         const { id } = req.user;
+    //         const body: string[]= req.body;
+    //         const data = body.map((url) => {
+    //             return {
+    //                 comment_id,
+    //                 post_id,
+    //                 author_id: id,
+    //                 url,
+    //             };
+    //         });
+    //         const result = await ProfileImages.bulkCreate(data);
+    //         res.json(result);
+    //     } catch (error) {
+    //         next(CustomError.internal(error.message));
+    //     }
+    // }
     async attachImage(req, res, next) {
         try {
             const { id } = req.user;
