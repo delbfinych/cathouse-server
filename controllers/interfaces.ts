@@ -35,6 +35,9 @@ export interface IPost {
     dislikes_count: number;
     liked_by_me: number | null;
     comments_count: number;
+    author_first_name: string;
+    author_last_name: string;
+    author_avatar_url: string;
 }
 
 export interface IComment {
@@ -46,6 +49,9 @@ export interface IComment {
     updatedAt: string;
     likes_count: number;
     dislikes_count: number;
+    author_first_name: string;
+    author_last_name: string;
+    author_avatar_url: string;
     attachments: [{ path: string; createdAt: string }];
 }
 

@@ -28,7 +28,10 @@ const getPost = async (post_id, user_id): Promise<IPost | null> => {
                     CAST(COALESCE(b.likes, 0) AS INTEGER) likes_count, 
                     CAST(COALESCE((b.total - b.likes), 0) AS INTEGER) dislikes_count,
                     likesTable.liked liked_by_me,
-                    CAST(COALESCE(comments.count, 0) AS INTEGER) comments_count
+                    CAST(COALESCE(comments.count, 0) AS INTEGER) comments_count,
+                    "Users".first_name as author_first_name,
+                    "Users".last_name as author_last_name,
+                    "Users".avatar_url as author_avatar_url
             FROM "Posts"
 
             LEFT JOIN  (SELECT post_id, 
@@ -44,6 +47,8 @@ const getPost = async (post_id, user_id): Promise<IPost | null> => {
                        post_id FROM "Comments"
                        GROUP BY post_id) comments
             ON comments.post_id = "Posts".post_id
+
+            JOIN "Users" on "Users".id = ${user_id}
 
             WHERE "Posts".post_id = ${post_id}`)
     )[0][0] as IPost;
@@ -206,13 +211,16 @@ class PostController {
     async getCommentsByPostId(req, res, next) {
         try {
             const { id } = req.params;
-            const { page } = req.query;
+            const { page = 1 } = req.query;
             const comments = (
                 await sequelize.query(`
             SELECT "Comments".*, 
                     CAST(COALESCE(b.likes, 0) AS INTEGER) AS likes_count, 
                     CAST(COALESCE((b.total - b.likes), 0) AS INTEGER) AS dislikes_count,
-                    likesTable.liked liked_by_me
+                    likesTable.liked liked_by_me,
+                    "Users".first_name as author_first_name,
+                    "Users".last_name as author_last_name,
+                    "Users".avatar_url as author_avatar_url
             FROM "Comments"
             LEFT JOIN (SELECT comment_id, 
                               COUNT(*) AS total, 
@@ -222,11 +230,9 @@ class PostController {
             AS b ON "Comments".comment_id = b.comment_id
             
 
-           
+            JOIN "Users" on "Users".id = "Comments".author_id
 
-            LEFT JOIN (SELECT liked, comment_id FROM "CommentLikes" where user_id = ${
-                req?.user?.id ?? null
-            }) 
+            LEFT JOIN (SELECT liked, comment_id FROM "CommentLikes" where user_id = ${req?.user?.id ?? null}) 
             AS likesTable ON "Comments".comment_id = likesTable.comment_id 
 
             WHERE "Comments".post_id = ${id}

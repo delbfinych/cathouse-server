@@ -940,6 +940,15 @@
                 },
                 "dislikes_count": {
                     "type": "string"
+                },
+                "author_first_name": {
+                    "type": "string"
+                },
+                "author_last_name": {
+                    "type": "string"
+                },
+                "author_avatar_url": {
+                    "type": "string"
                 }
             }
         },

@@ -308,7 +308,10 @@ class UsersController {
                         CAST(COALESCE(b.likes, 0) AS INTEGER) likes_count, 
                         CAST(COALESCE((b.total - b.likes), 0) AS INTEGER) dislikes_count,
                         likesTable.liked liked_by_me,
-                        CAST(COALESCE(comments.count, 0) AS INTEGER) comments_count
+                        CAST(COALESCE(comments.count, 0) AS INTEGER) comments_count,
+                        "Users".first_name as author_first_name,
+                        "Users".last_name as author_last_name,
+                        "Users".avatar_url as author_avatar_url
                 FROM "Posts"
 
                 LEFT JOIN   (SELECT post_id, 
@@ -321,6 +324,8 @@ class UsersController {
                 WHERE user_id = ${req?.user?.id ?? null}) 
                 AS likesTable ON "Posts".post_id = likesTable.post_id
                 
+                JOIN "Users" on "Users".id = ${id}
+
                 LEFT JOIN (SELECT COUNT(*), 
                        post_id FROM "Comments"
                        GROUP BY post_id) comments
@@ -359,7 +364,10 @@ class UsersController {
                     CAST(COALESCE(b.likes, 0) AS INTEGER) likes_count, 
                     CAST(COALESCE((b.total - b.likes), 0) AS INTEGER) dislikes_count,
                     likesTable.liked liked_by_me,
-                    CAST(COALESCE(comments.count, 0) AS INTEGER) comments_count
+                    CAST(COALESCE(comments.count, 0) AS INTEGER) comments_count,
+                    "Users".first_name as author_first_name,
+                    "Users".last_name as author_last_name,
+                    "Users".avatar_url as author_avatar_url
             FROM "Posts"
     
             LEFT JOIN   (SELECT post_id, 
@@ -377,6 +385,8 @@ class UsersController {
                    GROUP BY post_id) comments
             ON comments.post_id = "Posts".post_id
             
+            JOIN "Users" on "Users".id = "Posts".author_id
+
             WHERE "Posts".author_id in (SELECT following_id as id 
                                         FROM "Followers"
                                         WHERE follower_id = ${id}
