@@ -16,6 +16,7 @@ export const getPostAttachments = async (post_id: number) => {
         await sequelize.query(
             `SELECT url FROM "ProfileImages" WHERE post_id = ${post_id}`
         )
+        //@ts-ignore
     )[0].map((el) => el.url) as string[];
 };
 
@@ -24,6 +25,7 @@ export const getCommentAttachments = async (comment_id: number) => {
         await sequelize.query(
             `SELECT url FROM "ProfileImages" WHERE comment_id = ${comment_id}`
         )
+        //@ts-ignore
     )[0].map((el) => el.url) as string[];
 };
 
