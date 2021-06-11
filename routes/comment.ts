@@ -10,13 +10,6 @@ router
     .post('/:id', authCtrl.checkAuth(), commentCtrl.update)
     .delete('/:id', authCtrl.checkAuth(), commentCtrl.delete)
     .post('/:id/like', authCtrl.checkAuth(), commentCtrl.like)
-    .post('/:id/dislike', authCtrl.checkAuth(), commentCtrl.dislike)
-    // .post(
-    //     '/:id/media',
-    //     authCtrl.checkAuth('required'),
-    //     upload.array('files'),
-    //     commentCtrl.attachFiles
-    // )
-    .delete('/:id/media', authCtrl.checkAuth(), commentCtrl.detachFiles);
+    .post('/:id/dislike', authCtrl.checkAuth(), commentCtrl.dislike);
 
 export default router;

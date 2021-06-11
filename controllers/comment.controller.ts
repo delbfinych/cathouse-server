@@ -3,14 +3,17 @@ import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { CommentLikes, Comment } from '../models/models';
 import { IComment } from './interfaces';
-import { getRole } from './someQueries';
+import { getRole, getCommentAttachments } from './someQueries';
 
 enum Like {
     LIKE = 1,
     DISLIKE = 0,
 }
 
-export const getComment = async (comment_id, user_id): Promise<IComment | null> => {
+export const getComment = async (
+    comment_id,
+    user_id
+): Promise<IComment | null> => {
     const comment = (
         await sequelize.query(
             `select "Comments".*, 
@@ -30,10 +33,7 @@ export const getComment = async (comment_id, user_id): Promise<IComment | null> 
     if (!comment) {
         return null;
     }
-    // comment.attachments = await CommentAttachment.findAll({
-    //     where: { comment_id },
-    //     attributes: ['path', 'createdAt'],
-    // });
+    comment.attachments = await getCommentAttachments(comment_id);
     return comment;
 };
 class CommentController {
@@ -170,49 +170,6 @@ class CommentController {
         } catch (error) {
             next(CustomError.internal(error.message));
         }
-    }
-    async attachFiles(req, res, next) {
-        // try {
-        //     const { id } = req.params;
-        //     const userId = req.user.id;
-        //     const comment = await Comment.findOne({
-        //         where: { comment_id: id, author_id: userId },
-        //     });
-        //     if (!comment) {
-        //         return next(CustomError.forbidden('Could not attach file'));
-        //     }
-        //     for (let file of req.files) {
-        //         await CommentAttachment.create({
-        //             path: file.filename,
-        //             user_id: userId,
-        //             comment_id: id,
-        //         });
-        //     }
-        //     res.json({ paths: req.files.map((path) => path.filename) });
-        // } catch (error) {
-        //     next(CustomError.internal(error.message));
-        // }
-    }
-    async detachFiles(req, res, next) {
-        // try {
-        //     const { id } = req.params;
-        //     const userId = req.user.id;
-        //     const filenames = req.body.filenames;
-        //     const comment = await Comment.findOne({
-        //         where: { comment_id: id, author_id: userId },
-        //     });
-        //     if (!comment) {
-        //         return next(CustomError.forbidden('Could not detach file'));
-        //     }
-        //     for (let file of filenames) {
-        //         await CommentAttachment.destroy({
-        //             where: { comment_id: id, path: file },
-        //         });
-        //     }
-        //     res.json({ status: 'ok' });
-        // } catch (error) {
-        //     next(CustomError.internal(error.message));
-        // }
     }
 }
 

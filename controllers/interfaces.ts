@@ -38,6 +38,7 @@ export interface IPost {
     author_first_name: string;
     author_last_name: string;
     author_avatar_url: string;
+    attachments: string[];
 }
 
 export interface IComment {
@@ -52,7 +53,8 @@ export interface IComment {
     author_first_name: string;
     author_last_name: string;
     author_avatar_url: string;
-    attachments: [{ path: string; createdAt: string }];
+    attachments: string[]
+
 }
 
 export type UserInfo = Pick<IUser, 'id'>;

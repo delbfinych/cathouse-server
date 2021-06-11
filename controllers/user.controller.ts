@@ -1,3 +1,4 @@
+import { getPostAttachments } from './someQueries';
 import { Followers } from '../models/follower.model';
 import { CustomError } from '../error/CustomError';
 import { User, Post, Comment, Role, UserRole } from '../models/models';
@@ -334,7 +335,8 @@ class UsersController {
                 ORDER BY "Posts".post_id DESC LIMIT ${LIMIT} OFFSET ${
                     LIMIT * (page - 1)
                 }`)
-            )[0];
+            )[0] as IPost[];
+
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
@@ -344,7 +346,14 @@ class UsersController {
             )[0][0] as IPaginationInfo;
             res.json({
                 page: parseInt(page),
-                result: posts,
+                result: await Promise.all(
+                    posts.map(async (post) => {
+                        post.attachments = await getPostAttachments(
+                            post.post_id
+                        );
+                        return post;
+                    })
+                ),
                 total_count: details.total_count,
                 total_pages: details.total_pages,
             } as IPaginationResponse<IPost>);
@@ -407,7 +416,14 @@ class UsersController {
             )[0][0] as IPaginationInfo;
             res.json({
                 page: parseInt(page),
-                result: posts,
+                result: await Promise.all(
+                    posts.map(async (post) => {
+                        post.attachments = await getPostAttachments(
+                            post.post_id
+                        );
+                        return post;
+                    })
+                ),
                 total_count: details.total_count,
                 total_pages: details.total_pages,
             } as IPaginationResponse<IPost>);

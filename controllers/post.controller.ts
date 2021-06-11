@@ -10,7 +10,7 @@ import {
     IComment,
 } from './interfaces';
 import { getComment } from './comment.controller';
-import { getRole } from './someQueries';
+import { getRole, getPostAttachments, getCommentAttachments } from './someQueries';
 
 config();
 
@@ -48,17 +48,14 @@ const getPost = async (post_id, user_id): Promise<IPost | null> => {
                        GROUP BY post_id) comments
             ON comments.post_id = "Posts".post_id
 
-            JOIN "Users" on "Users".id = ${user_id}
+            JOIN "Users" on "Users".id = "Posts".author_id
 
             WHERE "Posts".post_id = ${post_id}`)
     )[0][0] as IPost;
     if (!post) {
         return null;
     }
-    // post.attachments = await PostAttachment.findAll({
-    //     where: { post_id },
-    //     attributes: ['path', 'createdAt'],
-    // });
+    post.attachments = await getPostAttachments(post_id);
 
     return post;
 };
@@ -232,7 +229,9 @@ class PostController {
 
             JOIN "Users" on "Users".id = "Comments".author_id
 
-            LEFT JOIN (SELECT liked, comment_id FROM "CommentLikes" where user_id = ${req?.user?.id ?? null}) 
+            LEFT JOIN (SELECT liked, comment_id FROM "CommentLikes" where user_id = ${
+                req?.user?.id ?? null
+            }) 
             AS likesTable ON "Comments".comment_id = likesTable.comment_id 
 
             WHERE "Comments".post_id = ${id}
@@ -249,7 +248,14 @@ class PostController {
             )[0][0] as IPaginationInfo;
             const response: IPaginationResponse<IComment> = {
                 page: parseInt(page),
-                result: comments,
+                result: await Promise.all(
+                    comments.map(async (comment) => {
+                        comment.attachments = await getCommentAttachments(
+                            comment.comment_id
+                        );
+                        return comment;
+                    })
+                ),
                 total_count: details.total_count,
                 total_pages: details.total_pages,
             };
