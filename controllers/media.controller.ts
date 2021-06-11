@@ -39,7 +39,7 @@ class MediaController {
                     const form = new FormData();
                     form.append('filename', fstr);
                     const res = await fetch(
-                        'https://secure-ridge-70714.herokuapp.com/put',
+                        process.env.REMOTE_SERVER_URL + 'put',
                         {
                             method: 'POST',
                             body: form,

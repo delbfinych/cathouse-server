@@ -5,11 +5,22 @@ import { upload } from '../multer';
 import fetch from 'node-fetch';
 const router = Router();
 
+const permitted = ['http://localhost:3000/', 'https://cathouse.vercel.app/'];
 router
     .get('/:path', async (req, res) => {
-        const response = await fetch(process.env.IMAGE_REMOTE_URL + req.url);
-        res.set({ 'content-type': response.headers.get('content-type') });
-        res.send(await response.buffer());
+        const imgLink = await (
+            await fetch(
+                `${process.env.REMOTE_SERVER_URL}/get?filename=${req.url}`
+            )
+        ).text();
+
+        const response = await fetch(imgLink);
+        if (!permitted.includes(req.headers.referer)) {
+            res.sendStatus(403);
+        } else {
+            res.set({ 'content-type': response.headers.get('content-type') });
+            res.send(await response.buffer());
+        }
     })
     .post(
         '/',
