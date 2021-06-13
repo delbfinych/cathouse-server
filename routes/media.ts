@@ -9,7 +9,7 @@ const permitted = ['http://localhost:3000/', 'https://cathouse.vercel.app/'];
 router
     .get('/:path', async (req, res) => {
         if (!permitted.includes(req.headers.referer)) {
-            res.sendStatus(403);
+            res.sendStatus(404);
         } else {
             const response = await fetch(
                 `${process.env.IMAGE_REMOTE_URL}/${req.url}`,
@@ -23,7 +23,7 @@ router
             res.send(await response.buffer());
         }
     })
-    .delete('/:path', authController.checkAuth(), async (req, res) => {})
+    .delete('/', authController.checkAuth(), mediaController.removeMedia)
     .post(
         '/',
         upload.fields([{ name: 'image', maxCount: 10 }]),
@@ -33,6 +33,6 @@ router
             return res.json([...req.files.map((file) => file.filename)]);
         }
     )
-    .post('/attach', authController.checkAuth(), mediaController.attachImage);
+    .post('/attach', authController.checkAuth(), mediaController.attachMedia);
 
 export default router;

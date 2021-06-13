@@ -58,6 +58,7 @@ class AuthController {
             const token = generateJwt({
                 id: user.id,
             });
+
             return res.json({ token });
         } catch (error) {
             next(CustomError.internal(error.message));

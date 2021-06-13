@@ -10,25 +10,20 @@ import { AttachmentsRequest } from './interfaces';
 config();
 
 class MediaController {
-    // async deleteImage(req, res, next) {
-    //     try {
-    //         const { id } = req.user;
-    //         const body: string[]= req.body;
-    //         const data = body.map((url) => {
-    //             return {
-    //                 comment_id,
-    //                 post_id,
-    //                 author_id: id,
-    //                 url,
-    //             };
-    //         });
-    //         const result = await ProfileImages.bulkCreate(data);
-    //         res.json(result);
-    //     } catch (error) {
-    //         next(CustomError.internal(error.message));
-    //     }
-    // }
-    async attachImage(req, res, next) {
+    async removeMedia(req, res, next) {
+        try {
+            const body: string[] = req.body;
+            const dataToRemove = body.map((file) => `'${file}'`).join(',');
+  
+            const result = await sequelize.query(
+                `DELETE FROM "ProfileImages" WHERE url in (${dataToRemove})`
+            );
+            res.json({ status: 'ok' });
+        } catch (error) {
+            next(CustomError.internal(error.message));
+        }
+    }
+    async attachMedia(req, res, next) {
         try {
             const { id } = req.user;
             const { body, comment_id, post_id }: AttachmentsRequest = req.body;
