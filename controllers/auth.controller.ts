@@ -9,10 +9,14 @@ import userController from './user.controller';
 
 const generateJwt = (obj) => {
     return jwt.sign({ ...obj }, process.env.SECRET_KEY, {
-        expiresIn: '24h',
+        expiresIn: '1h',
     });
 };
-
+const generateRefreshJwt = (obj) => {
+    return jwt.sign({ ...obj }, process.env.SECRET_KEY, {
+        expiresIn: '20d',
+    });
+};
 class AuthController {
     async signUp(req, res, next) {
         const { username, password, first_name, last_name, avatar_url } =
@@ -58,6 +62,15 @@ class AuthController {
             const token = generateJwt({
                 id: user.id,
             });
+            res.cookie(
+                'refresh_token',
+                generateRefreshJwt({
+                    id: user.id,
+                }),
+                {
+                    httpOnly: true,
+                }
+            );
 
             return res.json({ token });
         } catch (error) {
@@ -81,10 +94,40 @@ class AuthController {
             const token = generateJwt({
                 id: user.id,
             });
+            res.cookie(
+                'refresh_token',
+                generateRefreshJwt({
+                    id: user.id,
+                }),
+                {
+                    httpOnly: true,
+                }
+            );
 
             return res.json({ token });
         } catch (error) {
             next(CustomError.internal(error.message));
+        }
+    }
+
+    async refreshToken(req, res, next) {
+        try {
+            const token = req.cookies['refresh_token'];
+            const decoded = jwt.verify(token, process.env.SECRET_KEY);
+            res.cookie(
+                'refresh_token',
+                generateJwt({
+                    id: decoded.id,
+                }),
+                { httpOnly: true }
+            );
+            return res.json({
+                token: generateJwt({
+                    id: decoded.id,
+                }),
+            });
+        } catch (e) {
+            next(CustomError.unauthorized(e));
         }
     }
 

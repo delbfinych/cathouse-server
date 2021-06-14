@@ -12,14 +12,14 @@ import swaggerDocument from './swagger.json';
 import authController from './controllers/auth.controller';
 import { Roles } from './roles';
 import mediaController from './controllers/media.controller';
-
+import cookieParser from 'cookie-parser';
 
 const PORT = process.env.PORT;
 const app = express();
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({ credentials: true, origin: true }));
 
 app.use(express.json());
 // app.use('/media', express.static(path.resolve(__dirname, 'static')));
