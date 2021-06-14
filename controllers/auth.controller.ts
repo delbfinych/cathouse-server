@@ -69,6 +69,7 @@ class AuthController {
                 }),
                 {
                     httpOnly: true,
+                    sameSite: 'none',
                 }
             );
 
@@ -101,6 +102,7 @@ class AuthController {
                 }),
                 {
                     httpOnly: true,
+                    sameSite: 'none',
                 }
             );
 
@@ -119,7 +121,7 @@ class AuthController {
                 generateJwt({
                     id: decoded.id,
                 }),
-                { httpOnly: true }
+                { httpOnly: true, sameSite: 'none' }
             );
             return res.json({
                 token: generateJwt({

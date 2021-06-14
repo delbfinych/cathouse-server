@@ -17,6 +17,7 @@ import cookieParser from 'cookie-parser';
 const PORT = process.env.PORT;
 const app = express();
 
+app.set('trust proxy', 1);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: true }));
