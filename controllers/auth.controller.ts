@@ -120,7 +120,7 @@ class AuthController {
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
             res.cookie(
                 'refresh_token',
-                generateJwt({
+                generateRefreshJwt({
                     id: decoded.id,
                 }),
                 { httpOnly: true, sameSite: 'none', secure: true }
