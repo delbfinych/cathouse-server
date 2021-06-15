@@ -623,22 +623,6 @@
                 }
             }
         },
-        "/auth/verifyToken": {
-            "get": {
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Check if jwt-token is valid",
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                }
-            }
-        },
         "/auth/signup": {
             "post": {
                 "tags": [

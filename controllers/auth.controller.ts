@@ -7,16 +7,20 @@ import { Roles } from '../roles';
 import { getRole } from './someQueries';
 import userController from './user.controller';
 
-const generateJwt = (obj) => {
-    return jwt.sign({ ...obj }, process.env.SECRET_KEY, {
+const generateTokens = (payload) => {
+    const accessToken = jwt.sign({ ...payload }, process.env.SECRET_KEY, {
         expiresIn: '1h',
     });
-};
-const generateRefreshJwt = (obj) => {
-    return jwt.sign({ ...obj }, process.env.SECRET_KEY, {
+    const refreshToken = jwt.sign({ ...payload }, process.env.SECRET_KEY, {
         expiresIn: '20d',
     });
+
+    return {
+        accessToken,
+        refreshToken,
+    };
 };
+
 class AuthController {
     async signUp(req, res, next) {
         const { username, password, first_name, last_name, avatar_url } =
@@ -59,22 +63,15 @@ class AuthController {
                 user_id: user.id,
                 role_id: role.role_id,
             });
-            const token = generateJwt({
-                id: user.id,
-            });
-            res.cookie(
-                'refresh_token',
-                generateRefreshJwt({
-                    id: user.id,
-                }),
-                {
-                    httpOnly: true,
-                    sameSite: 'none',
-                    secure: true,
-                }
-            );
+            const tokens = generateTokens({ id: user.id });
 
-            return res.json({ token });
+            res.cookie('refresh_token', tokens.refreshToken, {
+                httpOnly: true,
+                sameSite: 'none',
+                secure: true,
+            });
+
+            return res.json({ token: tokens.accessToken });
         } catch (error) {
             next(CustomError.internal(error.message));
         }
@@ -93,22 +90,15 @@ class AuthController {
             return next(CustomError.unauthorized('Could not sign in'));
         }
         try {
-            const token = generateJwt({
-                id: user.id,
-            });
-            res.cookie(
-                'refresh_token',
-                generateRefreshJwt({
-                    id: user.id,
-                }),
-                {
-                    httpOnly: true,
-                    sameSite: 'none',
-                    secure: true,
-                }
-            );
+            const tokens = generateTokens({ id: user.id });
 
-            return res.json({ token });
+            res.cookie('refresh_token', tokens.refreshToken, {
+                httpOnly: true,
+                sameSite: 'none',
+                secure: true,
+            });
+
+            return res.json({ token: tokens.accessToken });
         } catch (error) {
             next(CustomError.internal(error.message));
         }
@@ -118,17 +108,14 @@ class AuthController {
         try {
             const token = req.cookies['refresh_token'];
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
-            res.cookie(
-                'refresh_token',
-                generateRefreshJwt({
-                    id: decoded.id,
-                }),
-                { httpOnly: true, sameSite: 'none', secure: true }
-            );
+            const tokens = generateTokens({ id: decoded.id });
+            res.cookie('refresh_token', tokens.refreshToken, {
+                httpOnly: true,
+                sameSite: 'none',
+                secure: true,
+            });
             return res.json({
-                token: generateJwt({
-                    id: decoded.id,
-                }),
+                token: tokens.accessToken,
             });
         } catch (e) {
             next(CustomError.unauthorized(e));
@@ -180,12 +167,6 @@ class AuthController {
             }
         } catch (e) {
             next(CustomError.unauthorized('Unauthorized'));
-        }
-    }
-    async verifyToken(req, res, next) {
-        if (req.token) {
-            req.params.id = req.user.id;
-            userController.get(req, res, next);
         }
     }
 }

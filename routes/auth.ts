@@ -9,6 +9,5 @@ router
     .post('/signin', authCtrl.signIn)
     .get('/signout', authCtrl.checkAuth(), authCtrl.signOut)
     .get('/verifyUserName', authCtrl.verifyUserName)
-    .get('/verifyToken', authCtrl.checkAuth(), authCtrl.verifyToken)
     .get('/refreshToken', authCtrl.refreshToken);
 export default router;
