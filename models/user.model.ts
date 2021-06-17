@@ -10,7 +10,7 @@ interface Attributes {
     avatar_url?: string;
     background_image_url?: string;
     description?: string;
-    private: boolean;
+    private?: boolean;
 }
 
 interface OptionalAttributes extends Optional<Attributes, 'id'> {}
