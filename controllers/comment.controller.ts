@@ -3,12 +3,12 @@ import sequelize from '../db';
 import { CustomError } from '../error/CustomError';
 import { CommentLikes, Comment } from '../models/models';
 import { getRole, getCommentAttachments, getComment } from './someQueries';
+import { IPost } from './interfaces';
 
 enum Like {
     LIKE = 1,
     DISLIKE = 0,
 }
-
 
 class CommentController {
     async get(req, res, next) {
@@ -145,6 +145,49 @@ class CommentController {
             next(CustomError.internal(error.message));
         }
     }
+    checkAccess = () => async (req, res, next) => {
+        const userId = req.user.id;
+        const commentId = req.params.id;
+
+        const post = (
+            await sequelize.query(
+                `SELECT * FROM "Posts" 
+             JOIN (SELECT post_id
+                FROM "Comments" 
+                WHERE comment_id = ${commentId}) comments 
+                ON comments.post_id = "Posts".post_id`
+            )
+        )[0][0] as IPost;
+        const privateStatus = (
+            await sequelize.query(
+                `SELECT private FROM "Users"
+                JOIN (SELECT author_id
+                      FROM "Posts"
+                      WHERE post_id = ${post.post_id}) posts
+                     ON posts.author_id = "Users".id`
+            )
+        )[0][0];
+
+        //@ts-ignore
+        if (privateStatus.private) {
+            const isPermitted = (
+                await sequelize.query(
+                    `SELECT * FROM "Followers"
+                    JOIN (SELECT author_id 
+                        FROM "Posts" 
+                        WHERE post_id = ${post.post_id}) author 
+                        ON author.author_id = "Followers".follower_id 
+                        AND 
+                        "Followers".following_id = ${userId}
+                    `
+                )
+            )[0][0];
+            if (!isPermitted) {
+                return next(CustomError.forbidden('Permission denied'));
+            }
+        }
+        next();
+    };
 }
 
 export default new CommentController();

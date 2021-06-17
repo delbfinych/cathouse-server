@@ -11,7 +11,7 @@ import {
     IPost,
     AuthRequest,
     UserInfo,
-    ISimpleUser,
+    IUserWithFollowInfo,
 } from './interfaces';
 config();
 
@@ -229,7 +229,7 @@ class UsersController {
                 ORDER BY "Users".id
                 LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)} `
                 )
-            )[0] as ISimpleUser[];
+            )[0] as IUserWithFollowInfo[];
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
@@ -238,7 +238,7 @@ class UsersController {
             `)
             )[0][0] as IPaginationInfo;
 
-            const response: IPaginationResponse<ISimpleUser> = {
+            const response: IPaginationResponse<IUserWithFollowInfo> = {
                 page: parseInt(page),
                 result: users,
                 total_count: details.total_count,
@@ -277,7 +277,7 @@ class UsersController {
             ORDER BY "Users".id
             LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)}`
                 )
-            )[0] as ISimpleUser[];
+            )[0] as IUserWithFollowInfo[];
             const details = (
                 await sequelize.query(`
             SELECT CAST(COUNT(*) AS INTEGER) total_count, 
@@ -285,7 +285,7 @@ class UsersController {
             FROM "Followers" WHERE follower_id = ${uid} 
             `)
             )[0][0] as IPaginationInfo;
-            const response: IPaginationResponse<ISimpleUser> = {
+            const response: IPaginationResponse<IUserWithFollowInfo> = {
                 page: parseInt(page),
                 result: users,
                 total_count: details.total_count,
@@ -321,7 +321,7 @@ class UsersController {
                 AS b ON "Posts".post_id = b.post_id
 
                 LEFT JOIN (SELECT liked, post_id FROM "Likes"
-                WHERE user_id = ${req?.user?.id ?? null}) 
+                WHERE user_id = ${req.user.id ?? null}) 
                 AS likesTable ON "Posts".post_id = likesTable.post_id
                 
                 JOIN "Users" on "Users".id = ${id}
@@ -366,6 +366,9 @@ class UsersController {
             const { id } = req.params;
             const { page = 1 } = req.query;
 
+            if (id != req.user.id) {
+                return next(CustomError.forbidden('Permission denied'));
+            }
             const posts = (
                 await sequelize.query(`
             SELECT "Posts".*, 
@@ -395,11 +398,20 @@ class UsersController {
             
             JOIN "Users" on "Users".id = "Posts".author_id
 
+            
             WHERE "Posts".author_id in (SELECT following_id as id 
                                         FROM "Followers"
                                         WHERE follower_id = ${id}
                                         UNION ALL 
-                                        SELECT ${id})
+                                        SELECT ${id}
+                                        EXCEPT (
+                                            SELECT id from "Users"
+                                            WHERE private = true
+                                            EXCEPT (SELECT follower_id FROM "Followers" WHERE following_id = ${id})
+                                            )
+                                        )
+
+            
             ORDER BY "Posts".post_id DESC LIMIT ${LIMIT} OFFSET ${
                     LIMIT * (page - 1)
                 }
@@ -493,7 +505,7 @@ class UsersController {
                 WHERE LOWER(CONCAT(first_name, last_name)) LIKE LOWER('%${query}%') 
                 LIMIT ${LIMIT} OFFSET ${LIMIT * (page - 1)}
             `)
-            )[0] as ISimpleUser[];
+            )[0] as IUserWithFollowInfo[];
 
             const details = (
                 await sequelize.query(`
@@ -503,7 +515,7 @@ class UsersController {
             WHERE LOWER(CONCAT(first_name, last_name)) LIKE LOWER('%${query}%')  
             `)
             )[0][0] as IPaginationInfo;
-            const response: IPaginationResponse<ISimpleUser> = {
+            const response: IPaginationResponse<IUserWithFollowInfo> = {
                 page: parseInt(page),
                 result,
                 total_count: details.total_count,
@@ -549,5 +561,26 @@ class UsersController {
             next(CustomError.internal(error.message));
         }
     }
+    checkAccess = () => async (req, res, next) => {
+        const userId = req.params.id;
+        const privateStatus = (
+            await sequelize.query(
+                `SELECT private FROM "Users" WHERE id = ${userId}`
+            )
+        )[0][0];
+
+        //@ts-ignore
+        if (privateStatus.private) {
+            const isPermitted = (
+                await sequelize.query(
+                    `SELECT * FROM "Followers" WHERE follower_id=${userId} and following_id = ${req.user.id}`
+                )
+            )[0][0];
+            if (!isPermitted) {
+                return next(CustomError.forbidden('Permission denied'));
+            }
+        }
+        next();
+    };
 }
 export default new UsersController();

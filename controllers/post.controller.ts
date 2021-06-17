@@ -71,7 +71,7 @@ class PostController {
             });
 
             if (!post) {
-                return next(CustomError.forbidden('Could not delete post'));
+                return next(CustomError.forbidden('Permission denied'));
             } else {
                 res.json({ status: 'ok' });
             }
@@ -88,7 +88,7 @@ class PostController {
 
             const post = await getPost(id, userId);
             if (!post || post.author_id !== userId || !message) {
-                return next(CustomError.forbidden('Could not update post'));
+                return next(CustomError.forbidden('Permission denied'));
             }
             await sequelize.query(
                 `UPDATE "Posts" SET body='${message}'
@@ -252,6 +252,40 @@ class PostController {
             next(CustomError.internal(error.message));
         }
     }
+    checkAccess = () => async (req, res, next) => {
+        const userId = req.user.id;
+        const postId = req.params.id;
+
+        const privateStatus = (
+            await sequelize.query(
+                `SELECT private FROM "Users" 
+                JOIN (SELECT author_id
+                    FROM "Posts" 
+                    WHERE post_id = ${postId}) posts 
+                    ON posts.author_id = "Users".id`
+            )
+        )[0][0];
+
+        //@ts-ignore
+        if (privateStatus.private) {
+            const isPermitted = (
+                await sequelize.query(
+                    `SELECT * FROM "Followers"
+                    JOIN (SELECT author_id 
+                        FROM "Posts" 
+                        WHERE post_id = ${postId}) author 
+                        ON author.author_id = "Followers".follower_id 
+                        AND 
+                        "Followers".following_id = ${userId}
+                    `
+                )
+            )[0][0];
+            if (!isPermitted) {
+                return next(CustomError.forbidden('Permission denied'));
+            }
+        }
+        next();
+    };
 }
 
 export default new PostController();

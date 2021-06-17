@@ -6,13 +6,33 @@ import { upload } from '../multer';
 const router = Router();
 
 router
-    .post('/', authCtrl.checkAuth(), postCtrl.create)
+    .post('/', authCtrl.checkAuth(), postCtrl.checkAccess(), postCtrl.create)
     .get('/:id', authCtrl.checkAuth(), postCtrl.get)
     .post('/:id', authCtrl.checkAuth(), postCtrl.update)
     .delete('/:id', authCtrl.checkAuth(), postCtrl.delete)
-    .post('/:id/like', authCtrl.checkAuth(), postCtrl.like)
-    .post('/:id/dislike', authCtrl.checkAuth(), postCtrl.dislike)
-    .get('/:id/comments', authCtrl.checkAuth(), postCtrl.getCommentsByPostId)
-    .post('/:id/comments', authCtrl.checkAuth(), postCtrl.addComment)
+    .post(
+        '/:id/like',
+        authCtrl.checkAuth(),
+        postCtrl.checkAccess(),
+        postCtrl.like
+    )
+    .post(
+        '/:id/dislike',
+        authCtrl.checkAuth(),
+        postCtrl.checkAccess(),
+        postCtrl.dislike
+    )
+    .get(
+        '/:id/comments',
+        authCtrl.checkAuth(),
+        postCtrl.checkAccess(),
+        postCtrl.getCommentsByPostId
+    )
+    .post(
+        '/:id/comments',
+        authCtrl.checkAuth(),
+        postCtrl.checkAccess(),
+        postCtrl.addComment
+    );
 
 export default router;

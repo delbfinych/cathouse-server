@@ -53,20 +53,17 @@ export interface IComment {
     author_first_name: string;
     author_last_name: string;
     author_avatar_url: string;
-    attachments: string[]
-
+    attachments: string[];
 }
 
 export type UserInfo = Pick<IUser, 'id'>;
-export type ISimpleUser = Pick<
+export type IUserCard = Pick<
     IUser,
-    | 'id'
-    | 'avatar_url'
-    | 'username'
-    | 'first_name'
-    | 'last_name'
-    | 'followed_by_me'
+    'id' | 'avatar_url' | 'username' | 'first_name' | 'last_name'
 >;
+
+export type IUserWithFollowInfo = IUserCard & { followed_by_me: number | null };
+
 export type AuthRequest = Express.Request & {
     user: UserInfo;
 };

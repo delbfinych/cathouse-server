@@ -10,6 +10,7 @@ interface Attributes {
     avatar_url?: string;
     background_image_url?: string;
     description?: string;
+    private: boolean;
 }
 
 interface OptionalAttributes extends Optional<Attributes, 'id'> {}
@@ -50,5 +51,10 @@ export const Users = sequelize.define<Instance>('Users', {
     description: {
         type: DataTypes.TEXT,
         allowNull: true,
+    },
+    private: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
     },
 });
