@@ -7,7 +7,7 @@ const router = Router();
 
 router
     .post('/', authCtrl.checkAuth(), postCtrl.checkAccess(), postCtrl.create)
-    .get('/:id', authCtrl.checkAuth(), postCtrl.get)
+    .get('/:id', authCtrl.checkAuth(), postCtrl.checkAccess(), postCtrl.get)
     .post('/:id', authCtrl.checkAuth(), postCtrl.update)
     .delete('/:id', authCtrl.checkAuth(), postCtrl.delete)
     .post(
