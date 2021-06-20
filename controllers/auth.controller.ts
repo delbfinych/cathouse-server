@@ -123,7 +123,12 @@ class AuthController {
     }
 
     async signOut(req, res, next) {
-        res.cookie('refresh_token', '', { maxAge: 0 });
+        res.cookie('refresh_token', '', {
+            maxAge: 0,
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+        });
         return res.json({
             message: 'Signed out successfuly',
         });
