@@ -402,14 +402,14 @@ class UsersController {
             WHERE "Posts".author_id in (SELECT following_id as id 
                                         FROM "Followers"
                                         WHERE follower_id = ${id}
-                                        UNION ALL 
-                                        SELECT ${id}
                                         EXCEPT (
                                             SELECT id from "Users"
                                             WHERE private = true
                                             EXCEPT (SELECT follower_id FROM "Followers" WHERE following_id = ${id})
                                             )
                                         )
+                                        UNION ALL 
+                                        SELECT ${id}
 
             
             ORDER BY "Posts".post_id DESC LIMIT ${LIMIT} OFFSET ${
