@@ -407,9 +407,10 @@ class UsersController {
                                             WHERE private = true
                                             EXCEPT (SELECT follower_id FROM "Followers" WHERE following_id = ${id})
                                             )
-                                        )
                                         UNION ALL 
                                         SELECT ${id}
+                                        )
+                                        
 
             
             ORDER BY "Posts".post_id DESC LIMIT ${LIMIT} OFFSET ${
