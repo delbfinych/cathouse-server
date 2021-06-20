@@ -7,14 +7,7 @@ import { UserRoles } from './userRole.model';
 import { Likes } from './likes.model';
 import { CommentLikes } from './commentLikes.model';
 import { ProfileImages } from './profileImages';
-// import { CommentAttachment } from './commentAttachment.model';
-// import { PostAttachment } from './postAttachment.model';
-// import { Media } from './media.model';
-import { File } from './file.model';
 
-Users.hasMany(File, {
-    foreignKey: 'user_id',
-});
 
 Users.hasMany(Posts, {
     foreignKey: 'author_id',
@@ -74,6 +67,5 @@ export {
     Likes,
     Users as User,
     CommentLikes,
-    File,
     ProfileImages,
 };
