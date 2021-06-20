@@ -119,6 +119,8 @@ class AuthController {
             });
         } catch (e) {
             console.log(e.message);
+            console.log("SD");
+            console.log(e);
             next(CustomError.unauthorized(e));
         }
     }
