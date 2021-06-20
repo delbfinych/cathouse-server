@@ -98,7 +98,6 @@ class AuthController {
                 secure: true,
             });
 
-            console.log("AUTH ", tokens);
             return res.json({ token: tokens.accessToken });
         } catch (error) {
             next(CustomError.internal(error.message));
@@ -108,7 +107,6 @@ class AuthController {
     async refreshToken(req, res, next) {
         try {
             const token = req.cookies['refresh_token'];
-            console.log("TOKEN: ", req.cookie);
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
             const tokens = generateTokens({ id: decoded.id });
             res.cookie('refresh_token', tokens.refreshToken, {
@@ -120,9 +118,6 @@ class AuthController {
                 token: tokens.accessToken,
             });
         } catch (e) {
-            console.log(e.message);
-            console.log("SD");
-            console.log(e);
             next(CustomError.unauthorized(e));
         }
     }

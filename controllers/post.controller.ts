@@ -256,6 +256,10 @@ class PostController {
         const userId = req.user.id;
         const postId = req.params.id;
 
+       
+        if (userId == req.user.id) {
+            return next();
+        }
         const privateStatus = (
             await sequelize.query(
                 `SELECT private FROM "Users" 

@@ -406,10 +406,11 @@ class UsersController {
                                             SELECT id from "Users"
                                             WHERE private = true
                                             EXCEPT (SELECT follower_id FROM "Followers" WHERE following_id = ${id})
-                                            )
+                                        )
                                         UNION ALL 
                                         SELECT ${id}
-                                        )
+                                       )
+                                        
                                         
 
             
@@ -564,6 +565,9 @@ class UsersController {
     }
     checkAccess = () => async (req, res, next) => {
         const userId = req.params.id;
+        if (userId == req.user.id) {
+            return next();
+        }
         const privateStatus = (
             await sequelize.query(
                 `SELECT private FROM "Users" WHERE id = ${userId}`

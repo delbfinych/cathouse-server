@@ -149,6 +149,9 @@ class CommentController {
         const userId = req.user.id;
         const commentId = req.params.id;
 
+        if (userId == req.user.id) {
+            return next();
+        }
         const post = (
             await sequelize.query(
                 `SELECT * FROM "Posts" 
