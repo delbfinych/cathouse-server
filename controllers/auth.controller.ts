@@ -118,6 +118,7 @@ class AuthController {
                 token: tokens.accessToken,
             });
         } catch (e) {
+            console.log(e.message);
             next(CustomError.unauthorized(e));
         }
     }
